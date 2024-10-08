@@ -1,0 +1,2 @@
+user_nom;user_prenom;user_matricule;user_initiale;user_mail;user_ingress;list user_campagne separateur | ;list user_service separateur | ;user_dateembauche;user_role
+RAVIA;Setra;855;RS;rs@gmail.com;5;BAM;;11/02/2000;2

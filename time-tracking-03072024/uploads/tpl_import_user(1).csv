@@ -1,0 +1,2 @@
+user_nom;user_prenom;user_matricule;user_initiale;user_mail;user_ingress;list user_campagne separateur | ;list user_service separateur | ;user_dateembauche;user_role
+NIRY;Manoa;88;NM;manoa@gmail.com;47;BAM|VINATIS;;11/02/2022;2

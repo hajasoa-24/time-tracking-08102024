@@ -1,0 +1,5 @@
+user_nom;user_prenom;user_matricule;user_initiale;user_mail;user_ingress;list user_campagne separateur | ;list user_service separateur | ;user_dateembauche;user_role;user_site
+ANDRIANOMENJANAHARY;Narindra Tanya;1186;TNA;;15;JUSTIFIT;;;2;1
+ANDRIAMAROSON;Tiffany Carina;1133;TIF;;282;JUSTIFIT;;;2;1
+RABENARY; Mirindrandrianina Erick;887;ECK;;204;PARUVENDU|JUSTIFIT;;;3;1
+	
