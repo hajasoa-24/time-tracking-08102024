@@ -59,7 +59,7 @@
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
-                    <div id="container_id" style="heigt: 300px"></div>
+                    <!--<div id="container_id" style="heigt: 300px"></div>-->
 
 
                 </div>
@@ -193,14 +193,16 @@ $(document).ready(function() {
                                    
             //nb_msg = response.message_counts;
 
-            // Vérifier si les messages sont vides
+            //  // Affichage message specifique de l'utilisateur dans l'id #container
             if (infosmg.length === 0) {
-                $('#container').append('<div class="alert alert-info">Aucun message personnelle à afficher.</div>');
+                $('#container').append('<div class="alert alert-info">Aucun nouveau message.</div>');
             } else {
                     $.each(infosmg, function(index, info) {
                         var usr_mane = info.message_expediteur_id;
                         var usr_expediteur_id = info.message_expediteur_id;
-                        checkForNewMessages2(usr_expediteur_id);        
+                        const message_lus = info.message_lus.split(',');
+                        const isUserRead = message_lus .includes(usr_id.toString());
+
                         // Fonction pour limiter le message à 2 mots
                         function limitMessage(msg) {
                             const words = msg.split(' ');
@@ -223,8 +225,8 @@ $(document).ready(function() {
                                                             
 
                                         <!-- Ajout de la badge -->
-                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="nb_msg" >
-                                                <span class="visually-hidden">unread messages</span>
+                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="nb_msg2"   style="display: ${isUserRead ? 'none' : 'block'}; >
+                                                <span class="visually-hidden"></span>
                                             </span>
                                     </button>
                                     <div class="container">
@@ -239,20 +241,22 @@ $(document).ready(function() {
                     });
                 }
 
-                // Affichage message rôle de l'utilisateur dans l'id #container_id
-                /*if (role_msg.length === 0) {
+                // Affichage message rôle de l'utilisateur dans l'id #container
+                if (role_msg.length === 0) {
                     $('#container_id').append('<div class="alert alert-info">Aucun message à afficher pour votre rôle.</div>');
                 } else {
                     $.each(role_msg, function(index, info) {
                         var usr_mane = info.message_expediteur_id;
                         console.log(info.message_status);
+                        const message_lus = info.message_lus.split(',');
+                        const isUserRead = message_lus .includes(usr_id.toString());
                             // Fonction pour limiter le message à 2 mots
                         function limitMessage(msg) {
                             const words = msg.split(' ');
                             return words.slice(0, 2).join(' ');
                         }
 
-                        $('#container_id').append(`
+                        $('#container').append(`
                             <div>
                                 <a class="h-5 list-group-item list-group-item-action" href="#list-item-1">
                                     <button type="button" class="btn position-relative expediteur messageButton" id="expediteur-${info.message_expediteur_id}" 
@@ -267,8 +271,8 @@ $(document).ready(function() {
                                             <span>${info.message_expediteur_name}</span>
 
                                                 <!-- Ajout de la badge -->
-                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="nb_msg2" >
-                                                <span class="visually-hidden">unread messages</span>
+                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="nb_msg"  style="display: ${isUserRead ? 'none' : 'block'}; >
+                                                <span class="visually-hidden"></span>
                                             </span>
                                     </button>
                                     <div class="container">
@@ -281,7 +285,7 @@ $(document).ready(function() {
                             </div>
                         `);
                     });
-                }*/
+                }
             },
             error: function(xhr, status, error) {
                     console.error('An error occurred:', error);
@@ -294,14 +298,7 @@ $(document).ready(function() {
     })
 
 
-
-
-let hasNewMessage2 = false;
-let hasNewMessage3 = false;
-
-
-
-function checkForNewMessages2(usr_expediteur_id) { 
+/*function checkForNewMessages2(usr_expediteur_id) { 
     $.ajax({ 
     url: '<?= site_url('message/check_new_messages') ?>',
     method: 'GET',
@@ -355,8 +352,8 @@ setInterval(() => {
         const usr_expediteur_id = $(this).data('expediteur');
         checkForNewMessages2(usr_expediteur_id);
     });
-}, 60000);
-
+}, 600000);
+*/
 
 
 
@@ -369,7 +366,7 @@ $(document).ready(function() {
         var username = $('#userInfo').data('username');
         console.log(username); // Affiche la valeur dans la console
             $.ajax({
-                url: '<?php echo site_url('message/find_user'); ?>',
+                //url: '<?php echo site_url('message/find_user'); ?>',
                 type: 'POST',
                 dataType: 'json',
                 data : {
@@ -510,10 +507,6 @@ $(document).ready(function() {
                     })*/
                         
                 },
-                error: function(xhr, status, error) {
-                    //alert(error);
-                    console.error('An error occurred:', error);
-                },
                            
             });
                   // Afficher la variable dans le span
@@ -529,11 +522,10 @@ $(document).ready(function() {
 
 /**Bouton clicke pour afficher les messages pour le Roles*/
 $(document).on('click', '.expediteur', function() {
-    hasNewMessage2 = false;
     var nom = $(this).val();
     console.log(nom);
     const message = $(this).data('message'); // Récupérer le message correspondant
-
+    $(this).find('#nb_msg').hide();
     $('#spinner1').show();
 
     var messageDate = $(this).data('message-date'); // Récupérer la valeur de message_date
@@ -587,11 +579,13 @@ $(document).on('click', '.expediteur', function() {
 
 /**Bouton clicke pour afficher les messages specifiques */
 $(document).on('click', '.expediteur2', function() {
-    hasNewMessage3 = false;
+    hasNewMessage = false;
+    console.log(hasNewMessage);
+    
     var nom = $(this).val();
     //console.log(nom);
     const message = $(this).data('message'); // Récupérer le message correspondant
-
+    $(this).find('#nb_msg2').hide();
     $('#spinner1').show();
 
     var messageDate = $(this).data('message-date'); // Récupérer la valeur de message_date
@@ -631,6 +625,7 @@ $(document).on('click', '.expediteur2', function() {
                     </div>
                 `)
             })
+           
         },
         error: function(xhr, status, error) {
             console.error('An error occurred:', error);

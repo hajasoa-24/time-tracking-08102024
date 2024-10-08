@@ -1529,9 +1529,8 @@
     var user_role = <?=  $this->session->userdata('user')['role'];?>;
 
     let hasNewMessage = false;
-    let isFocused = false; // Variable pour suivre si le focus a été fait
-
-
+    console.log(hasNewMessage);
+    
 function checkForNewMessages() { 
     $.ajax({ 
     url: '<?= site_url('message/check_new_messages') ?>',
@@ -1582,7 +1581,7 @@ $('.messageButton').click(function() {
 });
 
 // Vérifie les nouveaux messages toutes les 5 secondes
-setInterval(checkForNewMessages, 60000);
+setInterval(checkForNewMessages, 600000);
 
 
 

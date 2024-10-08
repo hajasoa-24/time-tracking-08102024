@@ -133,6 +133,7 @@
     </div>
 <div id="userInfo" data-username="<?= $top['username'] ?>"></div> 
 </section> 
+        <!--Formulaire avec le fichier-->
 <!--<section class="content">
     <div class="container-fluid">    
         <div class="col-md-100">
@@ -329,6 +330,7 @@
                     });
                 });
 
+                /**fonction ajax avec le fichier */
                 /*$(document).ready(function() {
                     $('#myButton').click(function () {
                         var formData = new FormData($('#mainForm')[0]); // Utiliser le formulaire principal
@@ -380,7 +382,7 @@
                         });
                     });
                 });*/
-
+                /** Fin fonction ajax avec le fichier */
             
 
         /*$(document).ready(function() {
@@ -617,7 +619,51 @@
             });
         });
     });
+$(document).ready(function() {
+    // Fonction pour gérer l'état des checkboxes
+    $('input[type="checkbox"]').on('change', function() {
+        // Vérifier si au moins une checkbox est sélectionnée
+        if ($('input[type="checkbox"]:checked').length > 0) {
+            // Désactiver le champ de recherche et le select
+            $('#user_search').prop('disabled', true);
+            $('#user_select').prop('disabled', true);
+        } else {
+            // Activer le champ de recherche et le select
+            $('#user_search').prop('disabled', false);
+            $('#user_select').prop('disabled', false);
+        }
+    });
 
+  // Gérer l'état des éléments de recherche
+  $('#user_select').on('change', function() {
+        if ($(this).val().length > 0) {
+            // Désactiver toutes les checkboxes
+            $('input[type="checkbox"]').prop('disabled', true);
+            // Ajouter la classe pour griser l'accordéon
+            $('#collapseOne').addClass('disabled-accordion');
+        } else {
+            // Activer les checkboxes si aucune sélection n'est faite
+            $('input[type="checkbox"]').prop('disabled', false);
+            // Retirer la classe pour rétablir l'accordéon
+            $('#collapseOne').removeClass('disabled-accordion');
+        }
+    });
+
+    // Gérer l'état du champ de recherche
+    $('#user_search').on('input', function() {
+        if ($(this).val().length > 0) {
+            // Désactiver toutes les checkboxes
+            $('input[type="checkbox"]').prop('disabled', true);
+            // Ajouter la classe pour griser l'accordéon
+            $('#collapseOne').addClass('disabled-accordion');
+        } else {
+            // Activer les checkboxes si le champ est vide
+            $('input[type="checkbox"]').prop('disabled', false);
+            // Retirer la classe pour rétablir l'accordéon
+            $('#collapseOne').removeClass('disabled-accordion');
+        }
+    });
+});
 </script>
 
 
@@ -632,7 +678,10 @@
     padding: 15px;
     border-radius: 5px;
 }
-
+.disabled-accordion {
+    opacity: 0.5; /* Diminue l'opacité pour donner un effet grisâtre */
+    pointer-events: none; /* Désactive les interactions avec l'accordéon */
+}
 </style>
 </body>
 </html>

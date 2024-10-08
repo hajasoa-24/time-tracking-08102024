@@ -212,7 +212,7 @@ $(document).ready(function(){
   $('#spinner').show();
 
 $.ajax({
-    url: '<?php echo site_url('message/select_message_user'); ?>',
+    //url: '<?php echo site_url('message/select_message_user'); ?>',
     type: 'POST',
     dataType: 'json',
     data: {
@@ -323,7 +323,7 @@ $.ajax({
                 $('body').append(modaMODIF);
     },
     error: function(xhr, status, error) {
-        console.error('An error occurred:', error);
+        //console.error('An error occurred:', error);
     },
     complete: function() {
         // Masquer le spinner une fois la requête terminée (qu'elle soit réussie ou non)
@@ -463,7 +463,7 @@ $(document).ready(function() {
         var username = $('#userInfo').data('username');
         console.log(username); // Affiche la valeur dans la console
             $.ajax({
-                url: '<?php echo site_url('message/find_user'); ?>',
+                //url: '<?php echo site_url('message/find_user'); ?>',
                 type: 'POST',
                 dataType: 'json',
                 data : {
@@ -606,7 +606,7 @@ $(document).ready(function() {
                 },
                 error: function(xhr, status, error) {
                     //alert(error);
-                    console.error('An error occurred:', error);
+                    //console.error('An error occurred:', error);
                 },
                            
             });

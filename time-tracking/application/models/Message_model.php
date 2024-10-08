@@ -80,33 +80,26 @@ class Message_model extends CI_Model{
 
     public function select_message($userId,$usrRole){
             //Selectionne message par usr_id
-        $this->db->select("message_expediteur_id,message_expediteur_name, message_objet, message_message, message_date,message_status");
-        /*$this->db->where('message_user', $userId);
+        $this->db->select("message_id,message_expediteur_id,message_expediteur_name, message_objet, message_message, message_date,message_status,message_lus");
+        $this->db->order_by('message_id', 'DESC');
         $this->db->group_by('message_expediteur_id');
-        $this->db->order_by('message_date', 'DESC');*/
-        $this->db->group_start() // Commence un groupe de conditions
-                ->where('message_user', $userId) // Condition pour userId
-                ->or_where('message_role_id', $usrRole) // Condition pour userRole
-                ->group_end(); // Fin du groupe de conditions
-                
-                $this->db->group_by('message_expediteur_id');
-                $this->db->order_by('message_date', 'DESC');
+        $this->db->where('message_user', $userId);
+      
+      
         $msg_query = $this->db->get($this->_table);
         $messages_id = $msg_query->result();
 
             //Selectionne message par role
-        $this->db->select("message_id,message_expediteur_id, message_expediteur_name, message_objet, message_message, message_date, message_status");
-        $this->db->where('message_role_id', $usrRole);
-        $this->db->where_in('message_status', [0, 1]); // Utiliser where_in pour sélectionner 0 ou 1
+        $this->db->select("message_id,message_expediteur_id, message_expediteur_name, message_objet, message_message, message_date, message_status,message_lus");
         $this->db->group_by('message_expediteur_id');
+        $this->db->where('message_role_id', $usrRole);
+        //$this->db->where_in('message_status', [0, 1]); // Utiliser where_in pour sélectionner 0 ou 1
         $this->db->order_by('message_date', 'DESC');
         $role_query = $this->db->get($this->_table);
         $messages_role = $role_query->result();
     
         $this->db->select("message_expediteur_id,message_expediteur_name, message_objet, message_message, message_date,message_status");
-        $this->db->where('message_user', $userId);
-        $this->db->or_where('message_role_id', $usrRole);
-        $this->db->where('message_status', 0);
+        $this->db->where('message_role_id', $usrRole);
         $this->db->group_by('message_expediteur_id');
         $this->db->order_by('message_date', 'DESC');
         $nb_query = $this->db->get($this->_table);
@@ -115,7 +108,7 @@ class Message_model extends CI_Model{
             // Retourner les deux résultats
         return [
             'messages_id' => $messages_id,
-            'nb_messages' => $nb_messages,
+            //'nb_messages' => $nb_messages,
             'messages_role' => $messages_role,
         ];
     
@@ -148,13 +141,13 @@ public function verification_message_status($dest_id, $dest_role, $exped_id, $da
         $updated_lus_ids = implode(',', $current_lus_ids);
         
         // Mettre à jour la colonne message_lus
-        $this->db->where('message_expediteur_id', $exped_id); // Assurez-vous de mettre le bon critère ici
-        $this->db->where('message_date', $message->message_date); // Assurez-vous d'utiliser la bonne date
+        $this->db->where('message_expediteur_id', $exped_id); 
+        $this->db->where('message_date', $message->message_date); 
         $this->db->update($this->_table, ['message_lus' => $updated_lus_ids]);
 
              // Compter le nombre total d'utilisateurs avec le rôle
-             $this->db->where('usr_role', $dest_role); // Assurez-vous d'utiliser le bon champ pour le rôle
-             $total_users_with_role = $this->db->count_all_results($this->_tUser); // Table des utilisateurs
+             $this->db->where('usr_role', $dest_role); 
+             $total_users_with_role = $this->db->count_all_results($this->_tUser); 
      
              // Compter le nombre d'utilisateurs ayant lu le message
              $count_users_lus = count($current_lus_ids);
@@ -170,7 +163,6 @@ public function verification_message_status($dest_id, $dest_role, $exped_id, $da
 
     $this->db->select("message_expediteur_id, message_expediteur_name, message_objet, message_message, message_date, message_status, message_lus");
     $this->db->where('message_user', $dest_id);
-    $this->db->or_where('message_role_id', $dest_role);
     $this->db->where('message_expediteur_id', $exped_id);
     $this->db->order_by('message_date', 'DESC');
 
@@ -202,11 +194,11 @@ public function verification_message_status($dest_id, $dest_role, $exped_id, $da
     ];
 }
 
-public function get_readers_ids($expediteur_id, $message_date) {
+public function get_readers_ids($message_id,$message_user) {
     // Récupérer le message correspondant
     $this->db->select('message_lus');
-    $this->db->where('message_expediteur_id', $expediteur_id);
-    $this->db->where('message_date', $message_date); // Utilisez la bonne colonne de date
+    $this->db->where('message_id', $message_id);
+    $this->db->or_where('message_user', $message_id);
     $query = $this->db->get($this->_table);
 
     if ($query->num_rows() > 0) {
@@ -293,15 +285,15 @@ public function get_readers_ids($expediteur_id, $message_date) {
         return $query->result();
     }
     
-    function select_allmsg_send($message_destinatair,$expediteur_id,$message_id) {
+    public function select_allmsg_send($message_destinatair,$expediteur_id,$message_id) {
         $this->db->select('message_id,	message_expediteur_id, message_role_id, message_message, message_objet, message_user, message_date');
         
         // Sélectionner les colonnes de la table tr_user
         $this->db->select('usr_nom, usr_prenom');
         
         // Joindre la table tr_user
-        $this->db->from($this->_table); // Spécifiez la table de base pour la requête
-        $this->db->join($this->_tUser, 'tr_user.usr_id = '.$this->_table.'.message_user', 'left'); // Remplacez 'message_expediteur_id' par la clé correspondante
+        $this->db->from($this->_table);
+        $this->db->join($this->_tUser, 'tr_user.usr_id = '.$this->_table.'.message_user', 'left'); 
     
         // Conditions de filtrage
         $this->db->where('message_user', $message_destinatair);
@@ -317,6 +309,11 @@ public function get_readers_ids($expediteur_id, $message_date) {
         return $query->result();
     }
 
+    public function user_read() {
+        $this->db->select('message_lus');
+                              
+        $this->db->select('usr_nom, usr_prenom');
+    }
 
     public function select_nb_msg($userNom){
         $this->db->select('COUNT(message_message) as count');

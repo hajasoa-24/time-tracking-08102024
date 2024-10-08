@@ -171,7 +171,7 @@ class Message extends My_Controller{
             echo json_encode($response);
         }
     }
-
+/**concroler test avec fichier */
    /* public function insertMessage() {
         $this->load->model('message_model');
         if ($this->input->server('REQUEST_METHOD') === 'POST') {
@@ -295,7 +295,7 @@ class Message extends My_Controller{
             }
         }
     }*/
-    
+    /**Fin concroler test avec fichier */
 
 
 /**test function */
@@ -539,17 +539,19 @@ class Message extends My_Controller{
         
         // Appel à la méthode pour récupérer les messages et le compte
         $new_messages = $this->message_model->select_message($userId,$usrRole);  
-
-            // Stocker les messages et le compte dans la session
-            $this->session->set_userdata('messages', [
-                'messages_id' => $new_messages['messages_id'],
-                'nb_messages' => $new_messages['nb_messages'],
-                'messages_role' => $new_messages['messages_role'],
-            ]);
         
+            // Vérifier si des messages ont été récupérés
+       /* if (!empty($new_messages['messages_id'])) {
+            // Stocker les messages dans la session
+            $messages = $this->session->set_userdata('user_messages', $new_messages['messages_id']);
+        } else {
+            // Optionnel : Nettoyer la session si aucun message n'est trouvé
+            $this->session->unset_userdata('user_messages');
+        }*/
+
         $response = [
             'messages' => $new_messages['messages_id'],
-            'message_counts' => $new_messages['nb_messages'],
+            //'message_counts' => $new_messages['nb_messages'],
             'messages_role' => $new_messages['messages_role'], 
         ];
         // Retourner la réponse au format JSON
