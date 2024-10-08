@@ -1,0 +1,586 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<section class="content">
+    <div class="container-fluid">      
+        
+            <div class="col-md-100">
+            <form action="<?php echo site_url('message/insertMessage'); ?>" method="post"></form>
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">Composé un message</h3>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div>
+                                <label for="destinataire">Destinataire</label>
+                            </div>
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="accordion col-md-6"  id="accordionExample">
+                                        <div class="accordion-item" >
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button heigt-5" type="button" data-coreui-toggle="collapse" data-coreui-target="#collapse" aria-expanded="true" aria-controls="collapseOne">
+                                                Role
+                                                </button>
+                                            </h2>
+                                            <div id="collapseOne" class="accordion-collapse collapse show ml-3" data-coreui-parent="#accordionExample">
+
+                                                <div class="form-check">
+                                                    <?php foreach ($listRole as $role) { ?>
+                                                        <div>
+                                                            <input class="form-check-input" type="checkbox" value="<?php echo $role->role_id ?>" id="role_msg" name="expediteur[]">
+                                                            <label for="<?php echo $role->role_libelle?>">
+                                                                <?php echo $role->role_libelle?>
+                                                            </label>   
+                                                        </div>
+                                                    <?php } 
+                                                    ?>
+                                                </div> 
+
+                                            </div>
+                                        </div>
+                                        
+                                     </div>
+                                     <div class="accordion col-md-6" style="width: 50%; " id="activite">
+                                        <div class="accordion-item" >
+                                            <h2 class="accordion-header">
+                                            <button class="accordion-button" type="button" data-coreui-toggle="collapse" data-coreui-target="#collapseTwo" aria-expanded="true" aria-controls="collapseOne">
+                                                User
+                                            </button>
+                                            </h2>
+                                            <div id="collapseTwo" class="accordion-collapse collapse show ml-3" data-coreui-parent="#activite">
+                                               <form class="d-flex mt-2 mb-2" role="search">
+                                                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="activite" id="user_search">
+                                                    
+                                                </form> 
+                                            </div>
+                                            <div id="collapseTwo" class="accordion-collapse collapse show ml-3 mr-2" data-coreui-parent="#activite">
+                                                <select class="form-control mb-2 ml-0 w-60" id="user_select" multiple required></select>
+                                                <!--<input type="text" id="selected_users" class="form-control" placeholder="Sélectionnés" readonly>-->
+                                                <div id="input_container"></div> <!-- Conteneur pour les nouveaux inputs -->                                             
+                                            </div>
+                                        </div>
+                                     </div>
+         
+                               
+                    
+                            </div>
+
+                           
+                         </div>
+
+                        <div class="form-group mt-3">
+                            <input class="form-control" placeholder="Objet :"  id="objet_msg">
+                        </div>
+                        <div class="mb-3">
+                            <textarea class="form-control" id="message_msg" placeholder="Message :" rows="3" ></textarea>
+                        </div>
+                        <div class="form-group row t-2">
+                            <label for="edit_user_dateembauche" class="col-sm-2 col-form-label"
+                            >Date </label
+                            >
+                            <div class="col-sm-10">
+                            <input
+                                type="date"
+                                name="date_msg"
+                                class="form-control"
+                                id="date_msg"
+                                placeholder=""
+                                value=""
+                            />
+                            </div>
+                        </div>
+
+                        <form id="uploadForm" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="formFileMultiple" class="form-label">Upload multiple files</label>
+                                <input class="form-control" type="file" id="file_msg" multiple name="fichiers[]">
+                            </div>
+                            <button type="button" id="uploadBtn" class="btn btn-primary">Upload</button>
+                        </form>
+                        <div id="message"></div>
+
+                        <div class="card-footer">
+                            <div class="float-right">
+                                <!--<button type="button" class="btn btn-default"><i class="fa fa-pencil-alt"></i> Draft</button>-->
+                                <button type="submit" id="myButton"  class="btn btn-primary" ><i class="fa fa-paper-plane"></i></button>
+                            </div>
+                                <button type="reset" class="btn btn-default"><i class="fa fa-times"></i> Discard</button>
+                                <button id="getValues">Get Selected Values</button>
+                        </div>
+
+                        <div id="userInfo" data-username="<?= $top['username'] ?>"></div> 
+                    </div>
+
+                </div>
+
+             </form> 
+            </div>
+
+    </div>
+</section> 
+  
+<script>
+        // Obtenir la date d'aujourd'hui au format YYYY-MM-DD
+        const today = new Date().toISOString().split('T')[0];
+        // Assigner cette date à l'input
+        document.getElementById('date_msg').value = today;
+
+
+        var user_nom = [];
+        var userName = '';
+
+                
+            $(document).ready(function() {
+
+                var username = $('#userInfo').data('username');
+                console.log(username); // Affiche la valeur dans la console
+                $.ajax({
+                    url: '<?php echo site_url('message/find_Exped'); ?>',
+                    type: 'POST',
+                    dataType: 'json',
+                    data : {
+                        username_msg : username,
+                        
+                    },
+                    
+                    success: function(response) {
+                        //console.log(response.data)
+                        user_nom = response.data;
+
+                        $.each(user_nom, function(index, nom) {
+                            userName = nom.usr_id;//nom.usr_nom +' '+ nom.usr_prenom//nom.usr_id;
+                            //console.log(userName);
+
+                        })
+                        
+                    },
+                    error: function(xhr, status, error) {
+                        alert(error);
+                        console.error('An error occurred:', error);
+                    }
+                });
+                
+            });
+   
+               
+            $('#myButton').click(function () {
+                const inputValues = [];
+
+                // Collecter les valeurs des inputs
+                $('#input_container input').each(function() {
+                    inputValues.push($(this).val());
+                });
+
+                // Afficher les valeurs collectées dans la console (pour vérification)
+                console.log("Valeurs à insérer :", inputValues);
+
+                var user_expediteur = userName;//id_de l'expediteure 
+                var selectedCheckboxes = $('input[id=role_msg]:checked');
+                var selectedValues = selectedCheckboxes.map(function() {
+                return $(this).val();
+                }).get();
+
+                var roles = selectedValues;
+                var user_destinataire = inputValues;
+                var objet = $('#objet_msg').val();
+                var message = $('#message_msg').val();
+                var date = $('#date_msg').val();
+                var file = $('#file_msg').val();
+                   
+                        
+            
+                console.log('Utilisation de user_nom:', user_nom);
+                console.log(user_expediteur);
+         
+                      
+
+                    $.ajax({
+                        url: '<?php echo site_url('message/insertMessage'); ?>',
+                        type: 'POST',
+                        data : {
+                            userInfo : user_expediteur,
+                            role_msg : roles,
+                            select_users_specifique : user_destinataire,
+                            objet_msg : objet,
+                            message_msg : message,
+                            date_msg : date,
+                            file_msg : file,
+                        },
+                        success: function(response) {
+                            console.log(response);
+                        },
+                        error: function(xhr, status, error) {
+                            console.log(error);
+                            console.error('An error occurred:', error);
+                        }
+                    });
+                });
+            
+
+        /*$(document).ready(function() {
+            // Récupérer la valeur de l'attribut data
+            var username = $('#userInfo').data('username');
+            console.log(username); // Affiche la valeur dans la console
+            $.ajax({
+                    url: '<?php echo site_url('message/find_Exped'); ?>',
+                    type: 'POST',
+                    dataType: 'json',
+                    data : {
+                        username_msg : username,
+                    },
+                    success: function(response) {
+                        alert(response.message);
+                        console.log(response.data)
+                    },
+                    error: function(xhr, status, error) {
+                        alert(error);
+                        console.error('An error occurred:', error);
+                    }
+                });
+            });*/
+        
+</script>
+
+<script>
+            var userLists = [];
+            
+             $.ajax({
+                 url: '<?= site_url('message/seacrch') ?>',
+                 method: "POST",
+                 dataType: "json",
+                 success: function (response) {
+                    userLists = response.data;
+                    console.log(userLists);
+                 },
+                 error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                 },
+            }); 
+
+            function populateSelect(userLists){
+
+                var $select = $('#user_select')
+                $select.empty(); // Vider le select avant de le remplir
+
+                $.each(userLists, function(index, userList) {
+                    let option = $("<option>", {
+                        value: userList.usr_nom +' '+ userList.usr_prenom , 
+                        text: userList.usr_nom +' '+ userList.usr_prenom + '(' +userList.usr_initiale+ '-' +userList.usr_matricule +')',
+                        'data-id': userList.usr_id
+                    });
+
+                    $('#user_select').append(option);
+
+                })
+            }
+            
+            $(document).on('input','#user_search', function() {
+                var userInput = $(this).val().toLowerCase(); // Récupérer la valeur et la convertir en minuscules
+
+                var filteredUserList = $.grep(userLists, function(userList) {
+                    return (
+                        userList.usr_nom.toLowerCase().includes(userInput) ||
+                        userList.usr_prenom.toLowerCase().includes(userInput) || 
+                        userList.usr_matricule.toLowerCase().includes(userInput)
+                    );
+                    console.log(userInput);
+                });
+
+                populateSelect(filteredUserList); // Réafficher les suggestions filtrées
+            });
+
+            $(document).on('change', '#user_select', function() {
+                var selectedOptions = $(this).val(); // Récupérer les valeurs sélectionnées
+                $('#selected_users').val(selectedOptions ? selectedOptions.join(', ') : ''); // Mettre à jour le champ de texte
+
+            });
+
+            $(document).on('change', '#user_select', function() {
+                var selectedOptions = $(this).val(); // Récupérer les valeurs sélectionnées
+                $('#selected_users').val(selectedOptions ? selectedOptions.join(', ') : ''); // Mettre à jour le champ de texte
+
+                // Récupérer les IDs à partir des options sélectionnées
+                var selectedIds = $(this).find('option:selected').map(function() {
+                    return $(this).data('id'); // Récupérer l'attribut data-id
+                }).get();
+
+                
+                var idsString = selectedIds.join(', '); 
+
+                console.log(idsString);
+
+                // Écouter le changement dans le select
+                $(document).on('change', '#user_select', function() {
+                    var selectedOptions = $(this).val(); // Récupérer les valeurs sélectionnées
+                    $('#selected_users').val(selectedOptions ? selectedOptions.join(', ') : ''); // Mettre à jour le champ de texte
+
+                    // Ajouter un input pour chaque option sélectionnée
+                    if (selectedOptions) {
+                        selectedOptions.forEach(function(option) {
+                            // Récupérer l'option correspondante avec data-id
+                            var selectedOption = $('#user_select option').filter(function() {
+                                return $(this).text().trim() === option; // Comparer le texte
+                            }).first();
+
+                            var userId = selectedOption.data('id'); // Obtenir l'ID
+
+                            // Vérifier si l'input existe déjà
+                            if ($('#input_container input[value="' + option + '"]').length === 0) {
+                                // Créer un input pour chaque option sélectionnée avec data-id
+                                $('#input_container').append(
+                                    '<div class="input-group mb-2">' +
+                                        '<input type="text" class="form-control value" data-id="' + userId + '" placeholder="Input pour ' + option + '" value="' + option + '" readonly>' +
+                                        '<button type="button" class="btn btn-outline-danger remove-input">X</button>' +
+                                    '</div>'
+                                );
+                            }
+                        });
+                    }
+                });
+       
+            })
+    
+ // Écouter le clic sur le bouton de suppression
+    $(document).on('click', '.remove-input', function() {
+        // Supprimer la valeur de l'input avant de le supprimer
+        const inputValue = $(this).siblings('input').val();
+        console.log("Valeur supprimée :", inputValue);
+
+        // Récupérer le data-id correspondant à l'input supprimé
+        const dataId = $(this).closest('.input-group').find('input').data('id'); // Récupérer l'ID de l'input
+
+        // Afficher l'ID dans la console
+        console.log("Data-ID récupéré :", dataId);
+
+        // Vérifier si dataId est défini
+        if (dataId !== undefined) {
+            // Afficher l'ID supprimé dans la console
+            console.log("ID supprimé :", dataId);
+        } else {
+            console.error("Aucun ID trouvé pour l'input.");
+        }
+
+        // Supprimer l'input correspondant
+        $(this).closest('.input-group').remove();
+
+        // Afficher les nouvelles valeurs dans les inputs restants
+        const remainingValues = [];
+        $('#input_container input').each(function() {
+            remainingValues.push($(this).val());
+        });
+        console.log("Valeurs restantes :", remainingValues);
+    });
+
+    
+</script>
+
+<script>
+    $(document).ready(function() {
+        $('#getValues').click(function() {
+            const inputValues = [];
+             // Collecter les valeurs des inputs
+            $('#input_container input').each(function() {
+                inputValues.push($(this).val());
+            });
+
+                // Afficher les valeurs collectées dans la console (pour vérification)
+                console.log("Valeurs à insérer :", inputValues);
+
+                var user_destinataire = inputValues;
+                //console.log(user_destinataire);
+
+
+                $.ajax({
+                    url: '<?php echo site_url('message/test2'); ?>',
+                    type: 'POST',
+                    dataType: 'json',
+                    data : {
+                         
+                            select_users_specifique : user_destinataire,
+                       
+                    },
+                    success: function(response) {
+                        console.log(response.message);
+                    },
+                    error: function(xhr, status, error) {
+                        console.log(error);
+                        console.error('An error occurred:', error);
+                    }
+                });
+        });
+        
+
+    // Récupérer les valeurs sélectionnées
+    /*var selectedCheckboxes = $('input[id=role_msg]:checked');
+
+    var selectedValues = selectedCheckboxes.map(function() {
+      return $(this).val();
+    }).get();
+
+    var roles = selectedValues;
+    
+
+                $.ajax({
+                    url: '<?php echo site_url('message/handleClick'); ?>',
+                    type: 'POST',
+                    dataType: 'json',
+                    data : {
+                       
+                        role_msg : roles,
+                    },
+                    success: function(response) {
+                        alert(response.message);
+                        console.log(response.message ,response.data);
+                    },
+                    error: function(xhr, status, error) {
+                        alert(error);
+                        console.error('An error occurred:', error);
+                    }
+                });*/
+   
+  });
+
+$(document).ready(function() {
+    $('#uploadBtn').click(function() {
+        var formData = new FormData($('#uploadForm')[0]);
+
+        $.ajax({
+            url: '<?php echo site_url("message/upload_files"); ?>',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                $('#message').html(response); // Affiche le message de réponse
+            },
+            error: function(xhr, status, error) {
+                $('#message').html('Une erreur s\'est produite : ' + error);
+            }
+        });
+    });
+});
+
+</script>
+
+
+<script src="<?= base_url('assets/jquery/jquery.min.js'); ?>"></script>
+<script src="<?= base_url('assets/dist/js/adminlte.min.js?v=3.2.0'); ?>"></script>
+<script src="<?= base_url('assets/plugins/summernote/summernote-bs4.min.js'); ?>"></script>
+<script src="<?= base_url('assets/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
+</body>
+</html>
+
+
+
+   /* $(document).on('change', '#user_select', function() {
+    var selectedOptions = $(this).val(); // Récupérer les valeurs sélectionnées
+    $('#selected_users').val(selectedOptions ? selectedOptions.join(', ') : ''); // Mettre à jour le champ de texte
+   
+    // Ajouter un input pour chaque option sélectionnée
+        if (selectedOptions) {
+            selectedOptions.forEach(function(option) {
+                // Vérifier si l'input existe déjà
+                if ($('#input_container input[value="' + option + '"]').length === 0) {
+                    // Créer un input pour chaque option sélectionnée
+                    $('#input_container').append(
+                        '<div class="input-group mb-2">' +
+                            '<input type="text" class="form-control value" id="select_users_specifique" placeholder="Input pour ' + option + '" value="' + option + '" readonly>' +
+                            '<input type="hidden" name="user_id[]" value="' + userId + '">' + // Ajouter l'usr_id en tant qu'input caché
+                            '<button type="button" class="btn btn-outline-danger remove-input" >X</button>' +
+                        '</div>'
+                    );
+    
+
+                    console.log(option);
+                }
+            });
+        }
+    })*/
+   /* $(document).on('change', '#user_select', function() {
+    var selectedOptions = $(this).find('option:selected'); // Récupérer les options sélectionnées
+    var selectedValues = [];
+    var selectedIds = [];
+
+    // Récupérer les valeurs et les IDs
+    selectedOptions.each(function() {
+        selectedValues.push($(this).val());
+        selectedIds.push($(this).data('id')); // Récupérer l'usr_id
+    });
+
+    // Mettre à jour le champ de texte avec les valeurs
+    $('#selected_users').val(selectedValues.length ? selectedValues.join(', ') : ''); 
+
+    // Optionnel : Vous pouvez également stocker les IDs quelque part si nécessaire
+    console.log('IDs sélectionnés :', selectedIds.join(', ')); // Afficher les IDs dans la console
+
+    // Ajouter un input pour chaque option sélectionnée
+    $('#input_container').empty(); // Vider le conteneur avant d'ajouter de nouveaux inputs
+
+    selectedOptions.each(function() {
+        var optionValue = $(this).val();
+        var userId = $(this).data('id');
+
+        // Créer un input pour chaque option sélectionnée
+        $('#input_container').append(
+            '<div class="input-group mb-2">' +
+                '<input type="text" class="form-control value" id="select_users_specifique" placeholder="Input pour ' + optionValue + '" value="' + optionValue + '" readonly>' +
+                '<input type="hidden" name="user_id[]" value="' + userId + '">' + // Ajouter l'usr_id
+                '<button type="button" class="btn btn-outline-danger remove-input">X</button>' +
+            '</div>'
+        );
+
+        // Afficher la valeur et l'ID dans la console
+        console.log('Ajouté: ' + optionValue + ', ID: ' + userId);
+    });
+    
+});
+
+    $(document).on('click', '.remove-input',  function() {
+
+        // Supprimer la valeur de l'input avant de le supprimer
+        const inputValue = $(this).siblings('input').val();
+        console.log("Valeur supprimée :", inputValue);
+        // Supprimer l'input correspondant
+        $(this).closest('.input-group').remove(); 
+
+          // Afficher les nouvelles valeurs dans les inputs restants
+        const remainingValues = [];
+        $('#input_container input').each(function() {
+            remainingValues.push($(this).val());
+        });
+        console.log("Valeurs restantes :", remainingValues);
+       
+    });*/
+
+
+
+    dans un rôle on a plusieurs utilisateur  par exemple dans un rôle agent il y a 60 utilisateur comment modifier le statut d'un message en 1 si tous les utilisateurs ont lus le message mon requête actuelle est la   public function select_messages_with_count($dest_id,$dest_role,$exped_id,$date_msg) {
+        // Récupérer tous les messages d'un utilisateur
+        $this->db->select("message_expediteur_id,message_expediteur_name, message_objet, message_message,message_date");
+        $this->db->where('message_user', $dest_id);
+        $this->db->or_where('message_role_id', $dest_role);
+        $this->db->where('message_expediteur_id', $exped_id);  
+        $this->db->where('message_status', 0);
+        $this->db->update($this->_table, ['message_status' => 1]);
+
+            // Récupérer les messages mis à jour
+        $this->db->select("message_expediteur_id,message_expediteur_name, message_objet, message_message, message_date");
+        $this->db->where('message_user', $dest_id);
+        $this->db->where('message_date', $date_msg);
+        $this->db->or_where('message_role_id', $dest_role);
+        $this->db->where('message_status', 1); // Récupérer les messages avec status mis à jour
+        $this->db->where('message_expediteur_id', $exped_id);
+        $this->db->order_by('message_date', 'DESC');
+
+        $query = $this->db->get($this->_table);
+        return $query->result();
+        
+    }

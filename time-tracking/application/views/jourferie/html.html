@@ -1,0 +1,34 @@
+$(document).ready(function(){
+
+    //initialisation datatable
+    var table = $("#mestaches").DataTable({
+        dom: 'Blfrtip',
+        buttons: [
+            {
+                extend : 'excelHtml5',
+                exportOptions : {
+                    orthogonal : 'export',
+                    columns: ':not(.notexport)'
+                }
+            },
+            
+        ],
+
+        language : {
+        },
+       
+
+
+        columns : [
+            {
+                data :"holidays_libelle",
+
+            },
+  
+            {
+                data :"holidays_date",
+                
+            },
+        ]
+ 
+    })};

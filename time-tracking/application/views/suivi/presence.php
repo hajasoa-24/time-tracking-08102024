@@ -1,0 +1,163 @@
+<div class="row container">
+    <div class="row">
+        <div class="col-md-12  title-page">
+            <h2>Suivi des présences</h2>
+        </div>
+    </div>
+
+    <div class="row mt-3 ">
+        <div class="col-md-12">
+            <table id="list-presence" class="table-striped table-hover" style="width:100%">
+                <thead>
+                    <tr>
+                        <!-- <th>Date</th> -->
+                        <th>Site</th>
+                        <th>Agent</th>
+                        <?php if($role == ROLE_CLIENT): ?>
+                        <th>Pseudo Francais</th>
+                        <?php endif; ?>
+                        
+                        <th>Matricule</th>
+                        <th>Initiale</th>
+                        <?php if($role != ROLE_CLIENT): ?>
+                            <th>Campagne</th>
+                            <th>Service</th> 
+                        <?php endif; ?>
+                        <th>Présence</th>
+                        <th>Incomplet</th>
+                        <th>Motif</th>
+                        <?php if($role != ROLE_CLIENT): ?>
+                            <th class="notexport">Action</th>
+                        <?php endif; ?>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var total_pause = "0";
+    $(document).ready(function(){
+         
+    });
+
+    //initialisation datatable
+    var presenceTable = $("#list-presence").DataTable({
+
+         dom: 'Blfrtip',
+        buttons: [
+            {
+                extend : 'excelHtml5',
+                exportOptions : {
+                    orthogonal : 'export',
+                    columns: ':not(.notexport)'
+                }
+            },
+            
+        ],
+        language : {
+            url : "<?= base_url("assets/datatables/fr-FR.json"); ?>"
+        },
+        ajax : "<?= site_url("presence/getListPresence"); ?>",
+        columns : [
+           /* { 
+                data : "day",
+                render : function(data, type, row){
+                    return moment(data, "YYYY-MM-DD").format('DD-MM-YYYY')
+                }
+            },*/
+            { data : "site_libelle" },
+            { data : "usr_prenom" },
+        <?php if($role == ROLE_CLIENT): ?>
+            { data : "usr_pseudo" },
+        <?php endif; ?>
+            
+            { data : "usr_matricule" },
+            { data : "usr_initiale" },
+
+        <?php if($role != ROLE_CLIENT): ?>
+            { data : 'list_campagne',
+                    visible : true,
+                    render : function(data, type, row){
+                        let limit = 30;
+                        if(data){
+                            if(data.length <= limit){
+                                return data
+                            }else{
+                                let text = data.slice(0, 10) + ' ...';
+                                return '<span data-bs-toggle="tooltip" data-bs-placement="top" title="' + data + '">' + text + '</span>' 
+                            } 
+                        }else{
+                            return ''
+                        }
+                    } 
+                },
+                { data : 'list_service',
+                    visible : true,
+                    render : function(data, type, row){
+                        let limit = 30;
+                        if(data){
+                            if(data.length <= limit){
+                                return data
+                            }else{
+                                let text = data.slice(0, 10) + ' ...';
+                                return '<span data-bs-toggle="tooltip" data-bs-placement="top" title="' + data + '">' + text + '</span>' 
+                            } 
+                        }else{
+                            return ''
+                        }
+                    } 
+            },
+         <?php endif; ?>
+
+            { 
+                data : null,
+                render : function(data, type, row){
+                    
+                    if(row.planning_off == '1') 
+                        return '<span class="badge bg-secondary">OFF</span>';
+                    else if(row.conge_id != null)
+                        return '<span class="badge bg-info">CONGE</span>';
+                    else
+                        return (row.presence == 1) ? '<span class="badge bg-success">Présent</span>' : '<span class="badge bg-danger">Absent</span>';
+                }
+            },
+            {
+                data : "motifpresence_incomplet",
+                render : function(data, type, row){
+                    if(type === 'export'){
+                        return (data == '1') ? 'OUI' : ''; 
+                    }else{
+                        return (data == '1') ? '<i class="fa fa-check btn-warning" ></i>' : ''; 
+                    }
+                }
+            },
+            
+            { 
+                data : 'motif_libelle',
+                render : function(data, type, row){
+                    if(row.presence !== '1'){
+                        if(row.motif_id !== null){
+                            return data;
+                        }else{
+                             return (row.typeconge_libelle ) ? (row.typeconge_libelle) : row.motifpresence_motif;
+                        }
+                       
+                    }
+                    return '';
+                }
+            },
+            <?php if($role != ROLE_CLIENT): ?>
+            { 
+                data : null,
+                render : function(data, type, row){
+                    return '<button title="Gérer le motif" data-motif="'+data.motifpresence_motif+'" data-incomplet="'+data.motifpresence_incomplet+'" data-day="'+data.day+'" data-presence="'+data.presence+'" data-shift="'+data.shift_id+'" data-agent="'+data.usr_id+'" class="edit-presence btn btn-secondary btn-sm mr-1"><i class="fa fa-pencil"></i></button>';
+                } 
+            }
+            <?php endif; ?>
+        ]
+    });
+
+    
+</script>
