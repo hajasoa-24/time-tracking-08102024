@@ -80,10 +80,24 @@ class Message_model extends CI_Model{
 
     public function select_message($userId,$usrRole){
             //Selectionne message par usr_id
-        $this->db->select("message_id,message_expediteur_id,message_expediteur_name, message_objet, message_message, message_date,message_status,message_lus");
+        /*$this->db->select("message_id,message_expediteur_id,message_expediteur_name, message_objet, message_message, message_date,message_status,message_lus");
         $this->db->order_by('message_id', 'DESC');
         $this->db->group_by('message_expediteur_id');
-        $this->db->where('message_user', $userId);
+        $this->db->where('message_user', $userId);*/
+        $this->db->select("m.message_id, m.message_expediteur_id, m.message_expediteur_name, m.message_objet, m.message_message, m.message_date, m.message_status, m.message_lus");
+        $this->db->from("{$this->_table} m");
+    
+        // Sous-requête pour obtenir le dernier message par expéditeur
+        $this->db->join("(SELECT message_expediteur_id, MAX(message_date) AS last_message_date 
+                          FROM {$this->_table} 
+                          WHERE message_user = $userId 
+                          GROUP BY message_expediteur_id) AS last_messages", 
+                         "m.message_expediteur_id = last_messages.message_expediteur_id 
+                          AND m.message_date = last_messages.last_message_date");
+    
+        // Condition pour le userId
+        $this->db->where('m.message_user', $userId);
+        $this->db->group_by('m.message_expediteur_id'); // Ajouter GROUP BY
       
       
         $msg_query = $this->db->get($this->_table);
@@ -194,24 +208,24 @@ public function verification_message_status($dest_id, $dest_role, $exped_id, $da
     ];
 }
 
-public function get_readers_ids($message_id,$message_user) {
-    // Récupérer le message correspondant
-    $this->db->select('message_lus');
-    $this->db->where('message_id', $message_id);
-    $this->db->or_where('message_user', $message_id);
-    $query = $this->db->get($this->_table);
+    public function get_readers_ids($message_id,$message_user) {
+        // Récupérer le message correspondant
+        $this->db->select('message_lus');
+        $this->db->where('message_id', $message_id);
+        $this->db->or_where('message_user', $message_id);
+        $query = $this->db->get($this->_table);
 
-    if ($query->num_rows() > 0) {
-        $row = $query->row();
-        // Vérifier si message_lus n'est pas vide
-        if (!empty($row->message_lus)) {
-            // Convertir la chaîne d'IDs en tableau
-            return explode(',', $row->message_lus);
+        if ($query->num_rows() > 0) {
+            $row = $query->row();
+            // Vérifier si message_lus n'est pas vide
+            if (!empty($row->message_lus)) {
+                // Convertir la chaîne d'IDs en tableau
+                return explode(',', $row->message_lus);
+            }
         }
-    }
 
-    return []; // Retourne un tableau vide si aucun ID trouvé
-}
+        return []; // Retourne un tableau vide si aucun ID trouvé
+    }
 
 /** --------------------------------------------- */
 
@@ -285,7 +299,7 @@ public function get_readers_ids($message_id,$message_user) {
         return $query->result();
     }
     
-    public function select_allmsg_send($message_destinatair,$expediteur_id,$message_id) {
+    /*public function select_allmsg_send($message_destinatair,$expediteur_id,$message_id,$message_role) {
         $this->db->select('message_id,	message_expediteur_id, message_role_id, message_message, message_objet, message_user, message_date');
         
         // Sélectionner les colonnes de la table tr_user
@@ -304,15 +318,160 @@ public function get_readers_ids($message_id,$message_user) {
         
         // Exécution de la requête
         $query = $this->db->get();
+        $list_msg = $query->result();
         
-        // Retourner les résultats
-        return $query->result();
-    }
+            // Récupérer les utilisateurs qui ont lu le message
+        $this->db->select("message_id,message_lus");
+        $this->db->select("usr_nom, usr_prenom, usr_matricule");
+        $this->db->from($this->_table);
+        $this->db->join($this->_tUser, 'tr_user.usr_id = '.$this->_table.'.message_user', 'left');
+        $this->db->where("message_id", $message_id);
+            
+            // Message_lus est une colonne avec des IDs séparés par des virgules
+        $read_query = $this->db->get();
+        $read_users = $read_query->result_array();
 
-    public function user_read() {
-        $this->db->select('message_lus');
-                              
-        $this->db->select('usr_nom, usr_prenom');
+        // Extraire les IDs lus
+        $read_user_ids = [];
+        if (!empty($read_users)) {
+            $read_user_ids = explode(',', $read_users[0]['message_lus']);
+        }
+        
+            // Récupérer tous les utilisateurs
+        $this->db->select("usr_id, usr_nom, usr_prenom, usr_matricule");
+        $this->db->where("usr_role", $message_role);
+        $this->db->from($this->_tUser); // Table des utilisateurs
+        $all_users_query = $this->db->get();
+        $all_users = $all_users_query->result_array();
+
+            // Extraire les IDs des utilisateurs
+        $all_user_ids = array_column($all_users, 'usr_id');
+        
+            // Filtrer les utilisateurs qui n'ont pas lu le message
+        $unread_users = array_diff($all_user_ids, $read_user_ids);
+        
+        return [
+            'list_msg' => $list_msg,
+            'read_users' => $read_users,
+            'unread_users' => $unread_users,
+        ];
+    }*/
+    public function select_allmsg_send($message_destinatair, $expediteur_id, $message_id, $message_role) {
+        // Sélectionner les messages et les détails des utilisateurs
+        $this->db->select('
+            m.message_id,
+            m.message_expediteur_id,
+            m.message_role_id,
+            m.message_message,
+            m.message_objet,
+            m.message_user,
+            m.message_date,
+            u.usr_nom,
+            u.usr_prenom
+        ');
+    
+        // Joindre la table tr_user pour récupérer les noms et prénoms
+        $this->db->from($this->_table . ' AS m');
+        $this->db->join($this->_tUser . ' AS u', 'u.usr_id = m.message_user', 'left');
+    
+        // Conditions de filtrage
+        $this->db->where('m.message_user', $message_destinatair);
+        $this->db->where('m.message_expediteur_id', $expediteur_id);
+        $this->db->where('m.message_id', $message_id);
+        
+        // Tri des résultats
+        $this->db->order_by('m.message_date', 'DESC');
+    
+        // Exécution de la requête
+        $query = $this->db->get();
+        $list_msg = $query->result();
+    
+        // Récupérer le message et les utilisateurs qui ont lu le message
+        $this->db->select("message_id, message_lus");
+        $this->db->from($this->_table);
+        $this->db->where("message_id", $message_id);
+        
+        // Exécution de la requête pour obtenir les lecteurs
+        $read_query = $this->db->get();
+        $read_users = $read_query->result_array();
+    
+        // Extraire les IDs lus
+        $read_user_ids = [];
+        if (!empty($read_users)) {
+            $read_user_ids = explode(',', $read_users[0]['message_lus']);
+            $read_user_ids = array_map('trim', $read_user_ids); // Nettoyer les espaces
+        }
+    
+        // Récupérer les détails des utilisateurs qui ont lu le message
+        $user_details = [];
+        if (!empty($read_user_ids)) {
+            $this->db->select("usr_id, usr_nom, usr_prenom, usr_matricule");
+            $this->db->from($this->_tUser);
+            $this->db->where_in("usr_id", $read_user_ids);
+            $user_query = $this->db->get();
+            $user_details['read'] = $user_query->result_array();
+        } else {
+            $user_details['read'] = []; // Aucune ID à rechercher
+        }
+    
+        // Récupérer tous les utilisateurs selon le rôle
+        $this->db->select("usr_id, usr_nom, usr_prenom, usr_matricule");
+        $this->db->where("usr_role", $message_role);
+        $this->db->from($this->_tUser);
+        $all_users_query = $this->db->get();
+        $all_users = $all_users_query->result_array();
+    
+        // Extraire les IDs des utilisateurs
+        $all_user_ids = array_column($all_users, 'usr_id');
+    
+        // Filtrer les utilisateurs qui n'ont pas lu le message
+        $unread_user_ids = array_diff($all_user_ids, $read_user_ids);
+    
+        // Récupérer les détails des utilisateurs qui n'ont pas lu le message
+        $unread_user_details = [];
+        if (!empty($unread_user_ids)) {
+            $this->db->select("usr_id, usr_nom, usr_prenom, usr_matricule");
+            $this->db->from($this->_tUser);
+            $this->db->where_in("usr_id", $unread_user_ids);
+            $unread_query = $this->db->get();
+            $unread_user_details = $unread_query->result_array();
+        }
+    
+        return [
+            'list_msg' => $list_msg,
+            'read_users' => $user_details['read'], // Liste des utilisateurs qui ont lu le message
+            'unread_users' => $unread_user_details, // Détails des utilisateurs qui n'ont pas lu le message
+        ];
+    }
+    
+    
+    
+    
+
+    public function get_read_unread_users($messageId,$userId) {
+        // Récupérer les utilisateurs qui ont lu le message
+        $this->db->select("message_lus");
+        $this->db->from($this->_table);
+        $this->db->where("message_id", $messageId);
+        
+        // On suppose que message_lus est une colonne avec des IDs séparés par des virgules
+        $this->db->like("message_lus", $userId);
+        $read_query = $this->db->get();
+        $read_users = $read_query->result_array();
+    
+        // Récupérer tous les utilisateurs
+        $this->db->select("usr_id");
+        $this->db->from($this->$_tUser); // Table des utilisateurs
+        $all_users_query = $this->db->get();
+        $all_users = $all_users_query->result_array();
+    
+        // Filtrer les utilisateurs qui n'ont pas lu le message
+        $unread_users = array_diff(array_column($all_users, 'usr_id'), array_column($read_users, 'usr_id'));
+    
+        return [
+            'read_users' => $read_users,
+            'unread_users' => $unread_users,
+        ];
     }
 
     public function select_nb_msg($userNom){

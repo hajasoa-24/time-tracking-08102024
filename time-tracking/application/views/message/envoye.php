@@ -62,7 +62,6 @@
                                             <div id="collapseTwo" class="accordion-collapse collapse show ml-3" data-coreui-parent="#activite">
                                                <form class="d-flex mt-2 mb-2" role="search">
                                                     <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="activite" id="user_search">
-                                                    
                                                 </form> 
                                             </div>
                                             <div id="collapseTwo" class="accordion-collapse collapse show ml-3 mr-2" data-coreui-parent="#activite">

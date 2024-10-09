@@ -606,16 +606,23 @@ class Message extends My_Controller{
     public function select_message_send(){
         $this->load->model('message_model');
         $message_id = $this->input->post('messageID');
-        $expediteur_id = $this->input->post('expediteurID'); 
-        $message_destinatair = $this->input->post('messageDESTINATAIR');   
-        $results = $this->message_model->select_allmsg_send($message_destinatair,$expediteur_id,$message_id);
-        echo json_encode(["data" => $results]);
+        $expediteur_id = $this->input->post('expediteurID');
+        $message_role = $this->input->post('messageROLEID');  
+        $message_destinatair = $this->input->post('messageDESTINATAIR');  
+        $messages_lus = $this->message_model->select_allmsg_send($message_destinatair,$expediteur_id,$message_id,$message_role);
+        /*echo json_encode(["data" => $results]);
         $response = array(
             'status' => 'success',
             'message' => 'Roles associated successfully',
             'data' => $results
-        );
-    } 
+        );*/
+        $response = [
+            'lists_msg' => $messages_lus['list_msg'],
+            'messages_lus' => $messages_lus['read_users'],
+            'messages_non_lus' => $messages_lus['unread_users'], 
+        ];
+        echo json_encode($response);
+    }
 
     public function find_user(){
         $this->load->model('message_model');

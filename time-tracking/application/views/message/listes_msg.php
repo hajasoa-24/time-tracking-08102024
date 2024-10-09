@@ -58,6 +58,10 @@
                         </div>
                         <div class="card-footer">
                             <div id="bouton_suppression"></div>
+                            <div class="float-end" >
+                                <div class="inline"  id="user_lus"></div>
+                                <div class="inline"  id="user_nonlus"></div>
+                            </div>
                         </div>
                 </div>
 
@@ -85,7 +89,7 @@ $(document).ready(function(){
             user_id: user_id, 
         },
         success: function(response) {
-             console.log(response.data);
+             //console.log(response.data);
              var msg = response.data;
             if (msg.length === 0) {
                 $('#container').append('<div class="alert alert-info">Aucun message personnelle à afficher.</div>');
@@ -101,6 +105,7 @@ $(document).ready(function(){
                                             data-message_id="${info.message_id}" 
                                             data-expediteur="${info.message_expediteur_id}"
                                             data-message-date="${info.message_date}"
+                                             data-message_role="${info.message_role_id}"
                                     > 
                                         <span id="messageButton"></span>
                                         
@@ -149,8 +154,11 @@ $(document).on('click', '.messagesuser', function() {
     $('#spinnerOne').show();
     var message_id =  $(this).data('message_id');
     var message_destinatair =  $(this).data('destinatair');
+    var message_role =  $(this).data('message_role');
     console.log(message_id);
     console.log(message_destinatair);
+    console.log(message_role);
+    
     $('#messageDisplay').empty();
     //$('#messageDisplay').text(message); // Afficher le message dans l'élément HTML
     $.ajax({
@@ -161,14 +169,22 @@ $(document).on('click', '.messagesuser', function() {
             expediteurID : <?=  $this->session->userdata('user')['id'];?>,      
             messageID : message_id,
             messageDESTINATAIR : message_destinatair,
+            messageROLEID : message_role,
         },
         success: function(response) {
-            console.log(response.data);
-            var message = response.data;
+            console.log(response.lists_msg);
+            console.log(response.messages_lus);
+            console.log(response.messages_non_lus);
+            var message = response.lists_msg;
+            var userLus = response.messages_lus;
+            var userNonLus = response.messages_non_lus;
             $('#messageDisplay').empty();
-   
+            $('#modal_user_lus').remove(); 
+            $('#modal_user_nonlus').remove();
             $.each(message, function(index, msg){
                 $('#bouton_suppression').empty();
+                $('#user_lus').empty();
+                $('#user_nonlus').empty();
                 $('#messageDisplay').append(`
                     <div class="card-body p-0">
                         <div class="mailbox-read-info">
@@ -196,6 +212,147 @@ $(document).on('click', '.messagesuser', function() {
                  <button type="button" class="btn btn-default supprimer_msg" id="${msg.message_id}" data-bs-toggle="modal" data-bs-target="#exampleModal" ><i class="fa fa-trash" aria-hidden="true"></i> Supprimer</button> 
                 `)
             })
+            let modalBodyContent = '';
+
+            // Construire le contenu du tableau à partir de userNonLus
+            $.each(userLus, function(index, msg) {
+                modalBodyContent += `
+                    <tr>
+                        <td>${msg.usr_nom}</td>
+                        <td>${msg.usr_prenom}</td>
+                        <td>${msg.usr_matricule}</td> 
+                    </tr>
+                `;
+            });
+
+            // Ajouter le contenu au tableau de la modal lors de l'ouverture
+            $('#user_lus').empty();      
+            $('#user_lus').append(`
+                <div>
+                    <i class="fa fa-eye" aria-hidden="true"></i> lus ${userLus.length}
+                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modal_user_lus">Voir</button>
+                </div>
+            `);
+
+            // Modal HTML
+            const modalHtml = `
+                <div class="modal fade" id="modal_user_lus" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="exampleModalLabel">Les personnes qui ont lu votre message. <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" id="search_user_lu"></h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <table class="table" id="lus_table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Nom</th>
+                                            <th scope="col">Prenom</th>
+                                            <th scope="col">Matricule</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="lus_tbody">
+                                        ${modalBodyContent}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Ajouter la modal au DOM (une seule fois)
+            $('body').append(modalHtml);
+
+            
+                // Fonction de recherche
+            $('#search_user_lu').on('input', function() {
+                const searchValue = $(this).val().toLowerCase();
+                
+                // Filtrer les utilisateurs lus
+                $('#lus_tbody tr').filter(function() {
+                    $(this).toggle(
+                        $(this).find('td').first().text().toLowerCase().indexOf(searchValue) > -1 || // Nom
+                        $(this).find('td').eq(1).text().toLowerCase().indexOf(searchValue) > -1 || // Prénom
+                        $(this).find('td').last().text().toLowerCase().indexOf(searchValue) > -1 // Matricule
+                    );
+                });
+            });
+
+            let modalBodyContent2 = '';
+
+            // Construire le contenu du tableau à partir de userNonLus
+            $.each(userNonLus, function(index, msg) {
+                modalBodyContent2 += `
+                    <tr>
+                        <td>${msg.usr_nom}</td>
+                        <td>${msg.usr_prenom}</td>
+                        <td>${msg.usr_matricule}</td> 
+                    </tr>
+                `;
+            });
+
+            // Ajouter le contenu au tableau de la modal lors de l'ouverture
+            $('#user_nonlus').empty();
+            $('#user_nonlus').append(`
+                <div>
+                    <i class="fa fa-low-vision" aria-hidden="true"></i> Non lus ${userNonLus.length}
+                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modal_user_nonlus">Voir</button>
+                </div>
+            `);
+
+            // Modal HTML
+            const modalHtml2 = `
+                <div class="modal fade" id="modal_user_nonlus" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="exampleModalLabel">Les personnes qui n'ont pas lu votre message. <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" id="search_user"></h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <table class="table" id="non_lus_table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Nom</th>
+                                            <th scope="col">Prenom</th>
+                                            <th scope="col">Matricule</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="non_lus_tbody">
+                                        ${modalBodyContent2}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+                // Ajouter la modal au DOM (une seule fois)
+            $('body').append(modalHtml2);
+
+                // Fonction de recherche
+            $('#search_user').on('input', function() {
+                const searchValue = $(this).val().toLowerCase();
+                
+                // Filtrer les utilisateurs non lus
+                $('#non_lus_tbody tr').filter(function() {
+                    $(this).toggle(
+                        $(this).find('td').first().text().toLowerCase().indexOf(searchValue) > -1 || // Nom
+                        $(this).find('td').eq(1).text().toLowerCase().indexOf(searchValue) > -1 || // Prénom
+                        $(this).find('td').last().text().toLowerCase().indexOf(searchValue) > -1 // Matricule
+                    );
+                });
+            });
+
         },
         error: function(xhr, status, error) {
             console.error('An error occurred:', error);
