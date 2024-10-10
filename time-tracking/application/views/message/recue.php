@@ -1,23 +1,25 @@
 
 <style>
-        .initial {
-            display: inline-block;
-            width: 30px; /* Ajuste la taille */
-            height: 30px; /* Ajuste la taille */
-            border-radius: 50%; /* Bordure ronde */
-            background-color: #007bff; /* Couleur de fond */
-            color: white; /* Couleur du texte */
-            text-align: center;
-            line-height: 30px; /* Aligne le texte verticalement */
-            font-weight: bold; /* Met en gras */
-            margin-right: 5px; /* Espacement à droite */
-        }
-        #nb_msg {
-            display: none;
-        }
-        #nb_msg2 {
-            display: none;
-        }
+.initial {
+    display: inline-block;
+    width: 30px; /* Ajuste la taille */
+    height: 30px; /* Ajuste la taille */
+    border-radius: 50%; /* Bordure ronde */
+    background-color: #33A8FF; /* Couleur de fond */
+    color: white; /* Couleur du texte */
+    text-align: center;
+    line-height: 30px; /* Aligne le texte verticalement */
+    font-weight: bold; /* Met en gras */
+    margin-right: 5px; /* Espacement à droite */
+}
+#nb_msg {
+    display: none;
+}
+#nb_msg2 {
+    display: none;
+}
+
+
 </style>
 <section class="content">
     <div class="container-fluid">
@@ -91,7 +93,7 @@
                 </div>
 
             </div>
-            <button class="import_file">Importer le fichier</button>
+            <!--<button class="import_file">Importer le fichier</button>-->
             <div id="ton_element_html"></div>
         </div>
 
@@ -101,70 +103,64 @@
 <script>
 
 
-    var tab_message ='';
-    var message ='';
-    $(document).ready(function() {
-        $('.expediteur').on('click', function() {
-            var expediteurId = $(this).val(); // Récupérer la valeur du bouton
-            console.log('ID de l\'expéditeur:', expediteurId);
+var tab_message ='';
+var message ='';
+$(document).ready(function() {
+    $('.expediteur').on('click', function() {
+        var expediteurId = $(this).val(); // Récupérer la valeur du bouton
+        console.log('ID de l\'expéditeur:', expediteurId);
             // Afficher la variable dans le span
-            $('#nomexpediteur').text(expediteurId);
-            var val = expediteurId;
-            $.ajax({
-                url: '<?php echo site_url('message/find_message'); ?>',
-                type: 'POST',
-                dataType: 'json',
-                data : {
-                    expediteur : val,
-                },
-                success: function(response) {
-                    console.log(response.data);
-                    tab_message = response.data;
+        $('#nomexpediteur').text(expediteurId);
+        var val = expediteurId;
+        $.ajax({
+            url: '<?php echo site_url('message/find_message'); ?>',
+            type: 'POST',
+            dataType: 'json',
+            data : {
+                expediteur : val,
+            },
+            success: function(response) {
+                console.log(response.data);
+                tab_message = response.data;
 
-                         // Vider le conteneur avant d'afficher les nouveaux messages
-                    $('#message-container').empty();
+                    // Vider le conteneur avant d'afficher les nouveaux messages
+                $('#message-container').empty();
 
-                    $.each(tab_message, function(index, msg) {
-                        message = msg.message_message;
-                        console.log(message);
-
-                            // Créer un élément HTML pour chaque message
-                        var messageElement = $('<div class="message"></div>').text(message);
-
-                            // Ajouter le nouvel élément au conteneur
-                        $('#message-container').append(messageElement);
-
-                    })
-                                            },
-                error: function(xhr, status, error) {
+                $.each(tab_message, function(index, msg) {
+                    message = msg.message_message;
+                    console.log(message);
+                        // Créer un élément HTML pour chaque message
+                    var messageElement = $('<div class="message"></div>').text(message);
+                        // Ajouter le nouvel élément au conteneur
+                    $('#message-container').append(messageElement);
+                })
+            },
+            error: function(xhr, status, error) {
                     //alert(error);
-                    console.error('An error occurred:', error);
-                }
-                    
-            });
-           
-        });
-       
-    });
+                console.error('An error occurred:', error);
+            }           
+        });       
+    });   
+});
 
 
-    $(document).ready(function() {
-        // Fonction pour limiter le nombre de mots
-        function limitWords(text, maxWords) {
-            const words = text.split(' ');
-            const limited = words.slice(0, maxWords).join(' ');
-            return limited + (words.length > maxWords ? '...' : '');
-        }
+$(document).ready(function() {
+    // Fonction pour limiter le nombre de mots
+    function limitWords(text, maxWords) {
+        const words = text.split(' ');
+        const limited = words.slice(0, maxWords).join(' ');
+        return limited + (words.length > maxWords ? '...' : '');
+    }
 
         // Récupérer le texte original
-        const originalMessage = $('#messagedisplay').text();
+    const originalMessage = $('#messagedisplay').text();
 
         // Limiter à 50 mots
-        const limitedText = limitWords(originalMessage, 1);
+    const limitedText = limitWords(originalMessage, 1);
 
         // Afficher le texte limité
-        $('#limitedMessage').text(limitedText);
-    });
+    $('#limitedMessage').text(limitedText);
+});
 
 
 var $user_nom ='';
@@ -195,7 +191,7 @@ $(document).ready(function() {
 
             //  // Affichage message specifique de l'utilisateur dans l'id #container
             if (infosmg.length === 0) {
-                $('#container').append('<div class="alert alert-info">Aucun nouveau message.</div>');
+                $('#container').append('<div class="alert alert-info">Aucun message personnel.</div>');
             } else {
                     $.each(infosmg, function(index, info) {
                         var usr_mane = info.message_expediteur_id;
@@ -211,55 +207,8 @@ $(document).ready(function() {
 
                         $('#container').append(`
                             <div>
-                                 <a class="h-5 list-group-item list-group-item-action" href="#list-item-1">
-                                    <button type="button" class="btn position-relative expediteur2 messageButton" id="expediteur-${info.message_expediteur_id}" 
-                                            value="${info.message_expediteur_id}"
-                                            data-message_id="${info.message_id}" 
-                                            data-message="${info.message_message}" 
-                                            data-objet="${info.message_objet}" 
-                                            data-expediteur="${info.message_expediteur_id}"
-                                            data-message-date="${info.message_date}"
-                                    > 
-                                        <span id="messageButton"></span>
-                                        <span>${info.message_expediteur_name}</span>
-                                                            
-
-                                        <!-- Ajout de la badge -->
-                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="nb_msg2"   style="display: ${isUserRead ? 'none' : 'block'}; >
-                                                <span class="visually-hidden"></span>
-                                            </span>
-                                    </button>
-                                    <div class="container">
-                                        <span>Objet: ${limitMessage(info.message_objet)}...</span>
-                                    </div>
-                                    <div class="container">
-                                        <span id="limitedMessage">Message: ${limitMessage(info.message_message)}...</span> <!-- Limite le message ici -->
-                                    </div>
-                                </a>
-                            </div>
-                        `);
-                    });
-                }
-
-                // Affichage message rôle de l'utilisateur dans l'id #container
-                if (role_msg.length === 0) {
-                    $('#container_id').append('<div class="alert alert-info">Aucun message à afficher pour votre rôle.</div>');
-                } else {
-                    $.each(role_msg, function(index, info) {
-                        var usr_mane = info.message_expediteur_id;
-                        console.log(info.message_status);
-                        const message_lus = info.message_lus.split(',');
-                        const isUserRead = message_lus .includes(usr_id.toString());
-                            // Fonction pour limiter le message à 2 mots
-                        function limitMessage(msg) {
-                            const words = msg.split(' ');
-                            return words.slice(0, 2).join(' ');
-                        }
-
-                        $('#container').append(`
-                            <div>
-                                <a class="h-5 list-group-item list-group-item-action" href="#list-item-1">
-                                    <button type="button" class="btn position-relative expediteur messageButton" id="expediteur-${info.message_expediteur_id}" 
+                                <a class="h-5 list-group-item list-group-item-action" href="#">
+                                    <button type="button" class="btn btn-light w-100 text-start position-relative expediteur2 messageButton" id="expediteur-${info.message_expediteur_id}" 
                                             value="${info.message_expediteur_id}" 
                                             data-message_id="${info.message_id}"
                                             data-message="${info.message_message}" 
@@ -274,19 +223,116 @@ $(document).ready(function() {
                                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="nb_msg"  style="display: ${isUserRead ? 'none' : 'block'}; >
                                                 <span class="visually-hidden"></span>
                                             </span>
+                                    
+                                        <div class="container2">
+                                            <span>Objet: ${limitMessage(info.message_objet)}</span>
+                                        </div>
+                                        <div class="container2">
+                                            <span id="limitedMessage">Message: ${limitMessage(info.message_message)}</span> <!-- Limite le message ici -->
+                                        </div>
                                     </button>
-                                    <div class="container">
-                                        <span>Objet: ${limitMessage(info.message_objet)}</span>
-                                    </div>
-                                    <div class="container">
-                                        <span id="limitedMessage">Message: ${limitMessage(info.message_message)}</span> <!-- Limite le message ici -->
-                                    </div>
+                                </a>
+                            </div>
+                        `);
+                    });
+                }
+
+                // Affichage message rôle de l'utilisateur dans l'id #container
+                if (role_msg.length === 0) {
+                    $('#container_id').append('<div class="alert alert-info">Aucun message pour votre rôle.</div>');
+                } else {
+                    $.each(role_msg, function(index, info) {
+                        var usr_mane = info.message_expediteur_id;
+                        console.log(info.message_status);
+                        const message_lus = info.message_lus.split(',');
+                        const isUserRead = message_lus .includes(usr_id.toString());
+                            // Fonction pour limiter le message à 2 mots
+                        function limitMessage(msg) {
+                            const words = msg.split(' ');
+                            return words.slice(0, 2).join(' ');
+                        }
+
+                        $('#container').append(`
+                            <div>
+                                <a class="h-5 list-group-item list-group-item-action" href="#">
+                                    <button type="button" class="btn btn-light w-100 text-start position-relative expediteur messageButton" id="expediteur-${info.message_expediteur_id}" 
+                                            value="${info.message_expediteur_id}" 
+                                            data-message_id="${info.message_id}"
+                                            data-message="${info.message_message}" 
+                                            data-objet="${info.message_objet}" 
+                                            data-expediteur="${info.message_expediteur_id}"
+                                            data-message-date="${info.message_date}"
+                                    >
+                                            <span id="messageButton"></span>
+                                            <span>${info.message_expediteur_name}</span>
+
+                                                <!-- Ajout de la badge -->
+                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="nb_msg"  style="display: ${isUserRead ? 'none' : 'block'}; >
+                                                <span class="visually-hidden"></span>
+                                            </span>
+                                    
+                                        <div class="container2">
+                                            <span>Objet: ${limitMessage(info.message_objet)}</span>
+                                        </div>
+                                        <div class="container2">
+                                            <span id="limitedMessage">Message: ${limitMessage(info.message_message)}</span> <!-- Limite le message ici -->
+                                        </div>
+                                    </button>
                                 </a>
                             </div>
                         `);
                     });
                 }
             },
+            /*success: function(response) {
+                console.log(response.data); // Pour vérifier la structure complète de la réponse
+                if (response.data && Array.isArray(response.data)) {
+                    infosmg = response.data;
+
+                    if (infosmg.length === 0) {
+                        $('#container').append('<div class="alert alert-info">Aucun message.</div>');
+                    } else {
+                        $.each(infosmg, function(index, info) {
+                            const usr_expediteur_id = info.message_expediteur_id;
+                            const message_lus = info.message_lus ? info.message_lus.split(',') : [];
+                            const isUserRead = message_lus.includes(usr_id.toString());
+
+                            function limitMessage(msg) {
+                                const words = msg.split(' ');
+                                return words.slice(0, 2).join(' ');
+                            }
+
+                            $('#container').prepend(`
+                                <div>
+                                    <a class="h-5 list-group-item list-group-item-action" href="#list-item-1">
+                                        <button type="button" class="btn position-relative expediteur2 messageButton" id="expediteur-${info.message_expediteur_id}" 
+                                                value="${info.message_expediteur_id}" 
+                                                data-message_id="${info.message_id}" 
+                                                data-message="${info.message_message}" 
+                                                data-objet="${info.message_objet}" 
+                                                data-expediteur="${info.message_expediteur_id}" 
+                                                data-message-date="${info.message_date}">
+                                            <span id="messageButton"></span>
+                                            <span>${info.message_expediteur_name}</span>
+                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="nb_msg2" style="display: ${isUserRead ? 'none' : 'block'};">
+                                                <span class="visually-hidden"></span>
+                                            </span>
+                                        </button>
+                                        <div class="container">
+                                            <span>Objet: ${limitMessage(info.message_objet)}...</span>
+                                        </div>
+                                        <div class="container">
+                                            <span id="limitedMessage">Message: ${limitMessage(info.message_message)}...</span>
+                                        </div>
+                                    </a>
+                                </div>
+                            `);
+                        });
+                    }
+                } else {
+                    $('#container').append('<div class="alert alert-danger">Erreur lors de la récupération des messages.</div>');
+                }
+            },*/
             error: function(xhr, status, error) {
                     console.error('An error occurred:', error);
             },
@@ -544,7 +590,6 @@ $(document).on('click', '.expediteur', function() {
             date_msg : messageDate,
         },
         success: function(response) {
-            console.log(response.messages);
             console.log(response.messages_role);
             const message = response.messages_role;
 
@@ -593,7 +638,7 @@ $(document).on('click', '.expediteur2', function() {
     $('#messageDisplay').empty();
     //$('#messageDisplay').text(message); // Afficher le message dans l'élément HTML
     $.ajax({
-        url:'<?php echo site_url('message/verifierStatutMessage'); ?>',
+        url:'<?php echo site_url('message/verifierStatutMessageUserId'); ?>',
         type:'POST',
         dataType: 'json',                                    
         data : {
@@ -604,9 +649,9 @@ $(document).on('click', '.expediteur2', function() {
             date_msg : messageDate,
         },
         success: function(response) {
-            console.log(response.messages);
+            console.log(response.data);
      
-            const message_specifique = response.messages;
+            const message_specifique = response.data;
 
             $('#messageDisplay_specifique').empty();
             $('#messageDisplay').empty();
@@ -998,3 +1043,4 @@ $(document).on('click', '.import_file', function() {
 </script>
 
 </section>
+<style>

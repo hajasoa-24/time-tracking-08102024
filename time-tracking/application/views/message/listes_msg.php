@@ -43,6 +43,8 @@
                         <h3 class="card-title">Elément envoyé</h3>
                     </div>
                         <div class="card-body p-0"  style="height: 700px; overflow-y: scroll;">
+                        <div id="notification-container"></div>
+                        <div id="success-message" class="alert alert-success" style="display: none;"></div>
                             <div id="spinnerOne" style="display:none;">
                                 <button class="btn btn-primary" type="button" disabled>
                                     <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
@@ -147,8 +149,8 @@ $(document).ready(function(){
         }
     })
 })
-/**Bouton clicke pour afficher les messages pour le Roles*/
 
+/**Bouton clicke pour afficher les messages pour le Roles*/
 $(document).on('click', '.messagesuser', function() {
    
     $('#spinnerOne').show();
@@ -233,9 +235,32 @@ $(document).on('click', '.messagesuser', function() {
                     <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modal_user_lus">Voir</button>
                 </div>
             `);
+                    // Modal pour la suppression d'un message
+                const modalHtml = `
+                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="exampleModalLabel">Confirmation de Suppression</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Êtes-vous sûr de vouloir supprimer ce message ?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                <button type="button" class="btn btn-primary confirmer_supprimer" >Supprimer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+
+                // Ajouter la modal au DOM
+                $('body').append(modalHtml);
 
             // Modal HTML
-            const modalHtml = `
+            const modalHtml2 = `
                 <div class="modal fade" id="modal_user_lus" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
@@ -266,7 +291,7 @@ $(document).on('click', '.messagesuser', function() {
             `;
 
             // Ajouter la modal au DOM (une seule fois)
-            $('body').append(modalHtml);
+            $('body').append(modalHtml2);
 
             
                 // Fonction de recherche
@@ -306,7 +331,7 @@ $(document).on('click', '.messagesuser', function() {
             `);
 
             // Modal HTML
-            const modalHtml2 = `
+            const modalHtml3 = `
                 <div class="modal fade" id="modal_user_nonlus" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
@@ -337,7 +362,7 @@ $(document).on('click', '.messagesuser', function() {
             `;
 
                 // Ajouter la modal au DOM (une seule fois)
-            $('body').append(modalHtml2);
+            $('body').append(modalHtml3);
 
                 // Fonction de recherche
             $('#search_user').on('input', function() {
@@ -421,26 +446,6 @@ $.ajax({
             });  
         }
   
-                // Modal pour la suppression d'un message
-                const modalHtml = `
-                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h1 class="modal-title fs-5" id="exampleModalLabel">Confirmation de Suppression</h1>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                Êtes-vous sûr de vouloir supprimer ce message ?
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                                <button type="button" class="btn btn-primary confirmer_supprimer" >Supprimer</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                `;
 
                 // Ajouter la modal au DOM
                 $('body').append(modalHtml);
@@ -572,7 +577,7 @@ $(document).on('click',  '.supprimer_msg', function() {
        // Récupérer l'ID du bouton cliqué
     var messageId = $(this).attr('id');
 
-// Afficher la valeur dans la console (ou faire autre chose avec)
+// Afficher la valeur dans la console 
 console.log('message_id :', messageId);
 $('.confirmer_supprimer').data('message-id', messageId);
    
@@ -589,7 +594,7 @@ $(document).on('click', '.confirmer_supprimer', function() {
         success: function(response) {
                 console.log(response.message);
                     // Mettre à jour l'interface : enlever l'élément du DOM
-                $(`#message-${messageId}`).remove(); // Assurez-vous que chaque message a un ID unique
+                $(`#message-${messageId}`).remove(); 
 
                 // Afficher un message de succès
                 const successMessage = $('<div class="alert alert-success" role="alert">Message supprimé avec succès !</div>');
@@ -602,7 +607,9 @@ $(document).on('click', '.confirmer_supprimer', function() {
 
                 // Fermer la modale après le succès
                 $('#exampleModal').modal('hide');
-                location.reload();
+                setTimeout(() => {
+                    location.reload();
+                }, 300); 
         },
         error: function(xhr, status, error) {
             console.error('Erreur AJAX : ' + error);
@@ -777,3 +784,17 @@ $(document).ready(function() {
   
 });
 </script>
+<style>
+.initial {
+    display: inline-block;
+    width: 30px; /* Ajuste la taille */
+    height: 30px; /* Ajuste la taille */
+    border-radius: 50%; /* Bordure ronde */
+    background-color: #33A8FF; /* Couleur de fond */
+    color: white; /* Couleur du texte */
+    text-align: center;
+    line-height: 30px; /* Aligne le texte verticalement */
+    font-weight: bold; /* Met en gras */
+    margin-right: 5px; /* Espacement à droite */
+}
+</style>

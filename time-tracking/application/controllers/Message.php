@@ -559,6 +559,23 @@ class Message extends My_Controller{
        
     }
 
+    public function get_message_user(){
+        $this->load->model('message_model');
+        $userId = $this->session->userdata('user')['id'];
+        $usrRole = $this->session->userdata('user')['role'];  
+        
+        // Appel à la méthode pour récupérer les messages et le compte
+        $results = $this->message_model->select_message_user($userId,$usrRole);  
+        echo json_encode(["data" => $results]);
+        $response = array(
+            'status' => 'success',
+            'message' => 'Roles associated successfully',
+            'data' => $results
+        );
+ 
+       
+    }
+
     public function nb_message(){
         $this->load->model('message_model');      
         $dest_id = $this->input->post('id_destinatair');
@@ -577,18 +594,34 @@ class Message extends My_Controller{
 
     public function verifierStatutMessage() {      
         $this->load->model('message_model');       
-        //$message_id = $this->input->post('message_id');
+        $message_id = $this->input->post('message_id');
         $dest_id = $this->input->post('id_destinatair');
         $dest_role = $this->input->post('role_destinatair');
         $exped_id = $this->input->post('id_expediteur');
         $date_msg = $this->input->post('date_msg');
-        $new_messages = $this->message_model->verification_message_status($dest_id, $dest_role, $exped_id, $date_msg);
+        $new_messages = $this->message_model->verification_message_status($message_id ,$dest_id, $dest_role, $exped_id, $date_msg);
        
         $response = [
-            'messages' => $new_messages['messages_specifique'],
             'messages_role' => $new_messages['messages'], 
         ];
         echo json_encode($response);
+    }
+
+    public function verifierStatutMessageUserId() {      
+        $this->load->model('message_model');       
+        $message_id = $this->input->post('message_id');
+        $dest_id = $this->input->post('id_destinatair');
+        $dest_role = $this->input->post('role_destinatair');
+        $exped_id = $this->input->post('id_expediteur');
+        $date_msg = $this->input->post('date_msg');
+        $new_messages = $this->message_model->verification_message_status_userId($message_id ,$dest_id, $dest_role, $exped_id, $date_msg);
+        echo json_encode(["data" => $new_messages]);
+        $response = array(
+            'status' => 'success',
+            'message' => 'Roles associated successfully',
+            'data' => $new_messages
+        );
+    
     }
     
     public function select_message_user(){

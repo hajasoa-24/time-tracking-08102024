@@ -94,30 +94,41 @@ class Message_model extends CI_Model{
                           GROUP BY message_expediteur_id) AS last_messages", 
                          "m.message_expediteur_id = last_messages.message_expediteur_id 
                           AND m.message_date = last_messages.last_message_date");
-    
-        // Condition pour le userId
         $this->db->where('m.message_user', $userId);
-        $this->db->group_by('m.message_expediteur_id'); // Ajouter GROUP BY
-      
-      
+        $this->db->group_by('m.message_expediteur_id'); 
         $msg_query = $this->db->get($this->_table);
         $messages_id = $msg_query->result();
 
             //Selectionne message par role
-        $this->db->select("message_id,message_expediteur_id, message_expediteur_name, message_objet, message_message, message_date, message_status,message_lus");
+        /*$this->db->select("message_id,message_expediteur_id, message_expediteur_name, message_objet, message_message, message_date, message_status,message_lus");
         $this->db->group_by('message_expediteur_id');
         $this->db->where('message_role_id', $usrRole);
-        //$this->db->where_in('message_status', [0, 1]); // Utiliser where_in pour sélectionner 0 ou 1
-        $this->db->order_by('message_date', 'DESC');
+        $this->db->order_by('message_date', 'DESC');*/
+        $this->db->select("m.message_id, m.message_expediteur_id, m.message_expediteur_name, m.message_objet, m.message_message, m.message_date, m.message_status, m.message_lus");
+        $this->db->from("{$this->_table} m");
+        
+        // Sous-requête pour obtenir le dernier message par expéditeur pour un rôle donné
+        $this->db->join("(SELECT message_expediteur_id, MAX(message_date) AS last_message_date 
+                          FROM {$this->_table} 
+                          WHERE message_role_id = $usrRole 
+                          GROUP BY message_expediteur_id) AS last_messages", 
+                         "m.message_expediteur_id = last_messages.message_expediteur_id 
+                          AND m.message_date = last_messages.last_message_date");
+        
+        // Filtrer par rôle
+        $this->db->where('m.message_role_id', $usrRole);
+        $this->db->order_by('m.message_date', ' ESC');
+        $this->db->group_by('m.message_expediteur_id');
+        
         $role_query = $this->db->get($this->_table);
         $messages_role = $role_query->result();
     
-        $this->db->select("message_expediteur_id,message_expediteur_name, message_objet, message_message, message_date,message_status");
+        /*$this->db->select("message_expediteur_id,message_expediteur_name, message_objet, message_message, message_date,message_status");
         $this->db->where('message_role_id', $usrRole);
         $this->db->group_by('message_expediteur_id');
         $this->db->order_by('message_date', 'DESC');
         $nb_query = $this->db->get($this->_table);
-        $nb_messages = $nb_query->result();
+        $nb_messages = $nb_query->result();*/
 
             // Retourner les deux résultats
         return [
@@ -128,10 +139,60 @@ class Message_model extends CI_Model{
     
     }
 
+    /*public function select_message_user($userId, $usrRole) {
+        // Sélectionne les messages spécifiques à l'utilisateur
+        $this->db->select("m.message_id, m.message_expediteur_id, m.message_expediteur_name, m.message_objet, m.message_message, m.message_date, m.message_status, m.message_lus, 'user' AS source");
+        $this->db->from("{$this->_table} m");
+        $this->db->join("(SELECT message_expediteur_id, MAX(message_date) AS last_message_date 
+                          FROM {$this->_table} 
+                          WHERE message_user = $userId 
+                          GROUP BY message_expediteur_id) AS last_messages", 
+                         "m.message_expediteur_id = last_messages.message_expediteur_id 
+                          AND m.message_date = last_messages.last_message_date", 
+                         'left'); // Utiliser 'left' pour éviter de perdre des résultats
+    
+        $this->db->where('m.message_user', $userId);
+        $this->db->group_by('m.message_expediteur_id');
+        $this->db->order_by('m.message_date', 'ESC');
+    
+        // Exécute la première requête et obtient les résultats
+        $query_user = $this->db->get();
+        $messages_user = $query_user->result();
+    
+        // Récupère les messages par rôle
+        $this->db->select("m.message_id, m.message_expediteur_id, m.message_expediteur_name, m.message_objet, m.message_message, m.message_date, m.message_status, m.message_lus, 'role' AS source");
+        $this->db->from("{$this->_table} m");
+        $this->db->join("(SELECT message_expediteur_id, MAX(message_date) AS last_message_date 
+                          FROM {$this->_table} 
+                          WHERE message_role_id = $usrRole 
+                          GROUP BY message_expediteur_id) AS last_messages", 
+                         "m.message_expediteur_id = last_messages.message_expediteur_id 
+                          AND m.message_date = last_messages.last_message_date", 
+                         'left'); // Utiliser 'left' pour éviter de perdre des résultats
+    
+        $this->db->where('m.message_role_id', $usrRole);
+        $this->db->group_by('m.message_expediteur_id');
+        $this->db->order_by('m.message_date', 'ESC');
+    
+        // Exécute la deuxième requête et obtient les résultats
+        $query_role = $this->db->get();
+        $messages_role = $query_role->result();
+    
+        // Combiner les deux résultats
+        $messages = array_merge($messages_user, $messages_role);
+    
+        // Retourner les résultats combinés
+        return $messages;
+        log_message('info', $this->db->last_query());
+    }
+    
+    
+    
+
     /**---------------------------------------------- */
 /**Verification si l'utilisateur a lus le message */
 
-public function verification_message_status($dest_id, $dest_role, $exped_id, $date_msg) {
+public function verification_message_status($message_id ,$dest_id, $dest_role, $exped_id, $date_msg) {
    
     $this->db->select("message_expediteur_id, message_expediteur_name, message_objet, message_message, message_date, message_status, message_lus");
     $this->db->where('message_role_id', $dest_role); // Vérifier par rôle
@@ -175,6 +236,14 @@ public function verification_message_status($dest_id, $dest_role, $exped_id, $da
              }
     }
 
+    return [
+        'messages' => $messages,
+    ];
+}
+
+
+public function verification_message_status_userId($message_id, $dest_id, $dest_role, $exped_id, $date_msg) {
+    // Sélection des messages spécifiques
     $this->db->select("message_expediteur_id, message_expediteur_name, message_objet, message_message, message_date, message_status, message_lus");
     $this->db->where('message_user', $dest_id);
     $this->db->where('message_expediteur_id', $exped_id);
@@ -197,16 +266,64 @@ public function verification_message_status($dest_id, $dest_role, $exped_id, $da
         $updated_lus_ids = implode(',', $current_lus_ids);
         
         // Mettre à jour la colonne message_lus
-        $this->db->where('message_expediteur_id', $exped_id); // Assurez-vous de mettre le bon critère ici
-        $this->db->where('message_date', $message->message_date); // Assurez-vous d'utiliser la bonne date
+        $this->db->where('message_expediteur_id', $exped_id); 
+        $this->db->where('message_id', $message_id);
+        $this->db->where('message_date', $message->message_date); 
         $this->db->update($this->_table, ['message_lus' => $updated_lus_ids]);
     }
 
-    return [
-        'messages_specifique' => $messages_specifique,
-        'messages' => $messages,
-    ];
+    // Retourner les messages spécifiques
+    return $messages_specifique; // Pas besoin d'appeler result() ici
 }
+
+/*public function verification_message_status_combined($message_id, $dest_id, $dest_role, $exped_id, $date_msg) {
+    // Sélectionner les messages basés sur l'expéditeur et le rôle ou l'utilisateur
+    $this->db->select("message_expediteur_id, message_expediteur_name, message_objet, message_message, message_date, message_status, message_lus");
+    $this->db->where('message_role_id', $dest_role);
+    $this->db->where('message_expediteur_id', $exped_id);
+    $this->db->order_by('message_date', 'DESC');
+
+    $query = $this->db->get($this->_table);
+    $messages = $query->result();
+
+    // Mettre à jour le statut de lecture pour les messages trouvés
+    foreach ($messages as $message) {
+        // Récupérer l'ID actuel de message_lus
+        $current_lus_ids = !empty($message->message_lus) ? explode(',', $message->message_lus) : [];
+
+        // Ajouter le nouvel ID si ce n'est pas déjà présent
+        if (!in_array($dest_id, $current_lus_ids)) {
+            $current_lus_ids[] = $dest_id; // Ajouter le nouvel ID
+        }
+
+        // Convertir le tableau en une chaîne pour la base de données
+        $updated_lus_ids = implode(',', $current_lus_ids);
+
+        // Mettre à jour la colonne message_lus
+        $this->db->where('message_expediteur_id', $exped_id); 
+        $this->db->where('message_date', $message->message_date); 
+        $this->db->update($this->_table, ['message_lus' => $updated_lus_ids]);
+
+        // Compter le nombre total d'utilisateurs avec le rôle
+        $this->db->where('usr_role', $dest_role); 
+        $total_users_with_role = $this->db->count_all_results($this->_tUser); 
+
+        // Compter le nombre d'utilisateurs ayant lu le message
+        $count_users_lus = count($current_lus_ids);
+
+        // Vérifier si les deux nombres correspondent
+        if ($count_users_lus === $total_users_with_role) {
+            // Mettre à jour le message_status
+            $this->db->where('message_expediteur_id', $exped_id);
+            $this->db->where('message_date', $message->message_date);
+            $this->db->update($this->_table, ['message_status' => 1]);
+        }
+    }
+
+    // Retourner les messages
+    return $messages;
+}
+
 
     public function get_readers_ids($message_id,$message_user) {
         // Récupérer le message correspondant
@@ -226,6 +343,8 @@ public function verification_message_status($dest_id, $dest_role, $exped_id, $da
 
         return []; // Retourne un tableau vide si aucun ID trouvé
     }
+
+    
 
 /** --------------------------------------------- */
 

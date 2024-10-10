@@ -1523,65 +1523,64 @@
 
   </script>
 <script>
+     /**fonction verification des nouveaux messages */
     //console.log('<?=  $this->session->userdata('user')['id'];?>');
     //console.log('<?=  $this->session->userdata('user')['role'];?>');
     var user_id = <?=  $this->session->userdata('user')['id'];?>;
     var user_role = <?=  $this->session->userdata('user')['role'];?>;
 
     let hasNewMessage = false;
-    console.log(hasNewMessage);
-    
-function checkForNewMessages() { 
-    $.ajax({ 
-    url: '<?= site_url('message/check_new_messages') ?>',
-    method: 'GET',
-    data: {
-        userId: user_id,
-        userRole: user_role, 
-    },
-    success: function(data) {
-        const result = JSON.parse(data);
-        
-        const newMessages = result.newMessages; // Nouveaux messages non lus
-        const unreadMessages = result.unreadMessages; // Messages non lus
+    //console.log(hasNewMessage);
+    function checkForNewMessages() { 
+        $.ajax({ 
+            url: '<?= site_url('message/check_new_messages') ?>',
+            method: 'GET',
+            data: {
+                userId: user_id,
+                userRole: user_role, 
+            },
+            success: function(data) {
+                const result = JSON.parse(data);
+                
+                const newMessages = result.newMessages; // Nouveaux messages non lus
+                const unreadMessages = result.unreadMessages; // Messages non lus
 
-        // Vérifier si des nouveaux messages existent
-        if (newMessages.length > 0) {
-            hasNewMessage = true;
-            updateBadge(); // Mettre à jour le badge
-        }
+                // Vérifier si des nouveaux messages existent
+                if (newMessages.length > 0) {
+                    hasNewMessage = true;
+                    updateBadge(); // Mettre à jour le badge
+                }
 
-        // Vous pouvez aussi traiter les messages non lus ici si nécessaire
-        if (unreadMessages.length > 0) {
-            // Traiter les messages non lus
-            hasNewMessage = true;
-            updateBadge();
-            console.log('Messages non lus:', unreadMessages);
-        }
-    },
-    error: function(xhr, status, error) {
-        console.error('Erreur lors de la vérification des nouveaux messages :', error);
+                // Vous pouvez aussi traiter les messages non lus ici si nécessaire
+                if (unreadMessages.length > 0) {
+                    // Traiter les messages non lus
+                    hasNewMessage = true;
+                    updateBadge();
+                    console.log('Messages non lus:', unreadMessages);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Erreur lors de la vérification des nouveaux messages :', error);
+            }
+        });
+
     }
-});
 
-}
-
-function updateBadge() {
-    const badge = $('#badges');
-    if (hasNewMessage) {
-        badge.show(); // Affiche le badge
+    function updateBadge() {
+        const badge = $('#badges');
+        if (hasNewMessage) {
+            badge.show(); // Affiche le badge
+        }
     }
-}
 
-$('.messageButton').click(function() {
-    console.log(hasNewMessage);
-    hasNewMessage = false; // Réinitialise l'état
-    updateBadge(); // Met à jour le badge
-    // Afficher les messages ici (ex: ouvrir un modal, rediriger, etc.)
-});
+    $('.messageButton').click(function() {
+        console.log(hasNewMessage);
+        hasNewMessage = false; // Réinitialise l'état
+        updateBadge(); // Met à jour le badge
+    });
 
-// Vérifie les nouveaux messages toutes les 5 secondes
-setInterval(checkForNewMessages, 600000);
+    // Vérifie les nouveaux messages toutes les 10 minutes
+    setInterval(checkForNewMessages, 600000);
 
 
 

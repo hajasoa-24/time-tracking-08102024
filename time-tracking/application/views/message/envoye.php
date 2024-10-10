@@ -71,14 +71,8 @@
                                             </div>
                                         </div>
                                      </div>
-         
-                               
-                    
+                                </div>
                             </div>
-
-                           
-                         </div>
-
                         <div class="form-group mt-3">
                             <input class="form-control" placeholder="Objet :"  id="objet_msg">
                         </div>
@@ -226,6 +220,10 @@
 
 <script>
     console.log('<?=  $this->session->userdata('user')['id'];?>');
+    //console.log('<?=  $this->session->userdata('user')['nom'];?>');
+    //console.log('<?=  $this->session->userdata('user')['prenom'];?>');
+    console.log('<?= $this->session->userdata('user')['nom'] . ' ' . $this->session->userdata('user')['prenom']; ?>');
+
         // Obtenir la date d'aujourd'hui au format YYYY-MM-DD
         const today = new Date().toISOString().split('T')[0];
         // Assigner cette date à l'input
@@ -234,7 +232,7 @@
         var user_nom = [];
         var userName = '';
              
-            $(document).ready(function() {
+           /* $(document).ready(function() {
                 var username = $('#userInfo').data('username');
                 console.log(username); // Affiche la valeur dans la console
                 $.ajax({
@@ -260,7 +258,7 @@
                     }
                 });
                 
-            });
+            });*/
                 /**fonction pour l'envoyer du message */   
             $('#myButton').click(function () {
                 const inputValues = [];
@@ -274,8 +272,8 @@
                 // Afficher les valeurs collectées dans la console (pour vérification)
                 //console.log("Valeurs à insérer :", remainingIds);
 
-                var user_expediteur = userID;//id_de l'expediteure
-                var user_expediteur_nom = userNom; 
+                var user_expediteur = <?=  $this->session->userdata('user')['id'];?>;//id_de l'expediteure
+                var user_expediteur_nom = '<?= $this->session->userdata('user')['nom'] . ' ' . $this->session->userdata('user')['prenom']; ?>';
                 var selectedCheckboxes = $('input[id=role_msg]:checked');
                 var selectedValues = selectedCheckboxes.map(function() {
                 return $(this).val();
@@ -287,46 +285,56 @@
                 var message = $('#message_msg').val();
                 var date = $('#date_msg').val();
                 var file = $('#file_msg').val();                   
-                                   
+
                 console.log('Utilisation de user_nom:', user_nom);
                 console.log(user_expediteur);
-                             
+
+                // Vérifier si le message est vide
+                if (!message.trim()) {
+                    //console.log("Le message ne peut pas être vide");  
+                    // Afficher le toast pour informer l'utilisateur
+                    $('#toast').addClass('toast-danger'); // Ajoute la classe de danger
+                    $('#toast').text('Le message ne peut pas être vide.'); // Message de toast 
+                    $('#toast').fadeIn().delay(3000).fadeOut();
+                    $('#toast').toast({ delay: 3000 }); // Initialiser avec un délai
+                    $('#toast').toast('show'); // Afficher le toast
+                } else {
                     $.ajax({
                         url: '<?php echo site_url('message/insertMessage'); ?>',
                         type: 'POST',
-                        data : {
-                            userInfo : user_expediteur,
-                            expediteur_nom : user_expediteur_nom,
-                            role_msg : roles,
-                            select_users_specifique : user_destinataire,
-                            objet_msg : objet,
-                            message_msg : message,
-                            date_msg : date,
-                            file_msg : file,
+                        data: {
+                            userInfo: user_expediteur,
+                            expediteur_nom: user_expediteur_nom,
+                            role_msg: roles,
+                            select_users_specifique: user_destinataire,
+                            objet_msg: objet,
+                            message_msg: message,
+                            date_msg: date,
+                            file_msg: file,
                         },
                         success: function(response) {
-                            //console.log(response);
+                            // Vider les inputs
+                            $('input[id=role_msg]:checked').prop('checked', false);
+                            $('#input_container').empty();
+                            $('#objet_msg').val('');
+                            $('#message_msg').val('');
+                            $('#date_msg').val('');
+                            $('#file_msg').val('');
 
-                                // Vider les inputs
-                               
-                                $('input[id=role_msg]:checked').prop('checked', false);
-                                $('#input_container').empty();
-                                $('#objet_msg').val('');
-                                $('#message_msg').val('');
-                                $('#date_msg').val('');
-                                $('#file_msg').val('');
-
-                                // Afficher le toast
-                                $('#toast').fadeIn().delay(3000).fadeOut();
-                                $('#toast').toast({ delay: 3000 }); // Initialiser avec un délai
-                                $('#toast').toast('show'); // Afficher le toast
-                          
+                            // Afficher le toast pour confirmation
+                            $('#toast').text('Message envoyé avec succès.'); // Message de confirmation
+                            $('#toast').fadeIn().delay(3000).fadeOut();
+                            $('#toast').toast({ delay: 3000 }); // Initialiser avec un délai
+                            $('#toast').toast('show'); // Afficher le toast
                         },
                         error: function(xhr, status, error) {
                             console.log(error);
                             console.error('An error occurred:', error);
                         }
                     });
+                }
+
+
                 });
 
                 /**fonction ajax avec le fichier */
@@ -448,7 +456,8 @@
                     return (
                         userList.usr_nom.toLowerCase().includes(userInput) ||
                         userList.usr_prenom.toLowerCase().includes(userInput) || 
-                        userList.usr_matricule.toLowerCase().includes(userInput)
+                        userList.usr_matricule.toLowerCase().includes(userInput)||
+                        userList.usr_initiale.toLowerCase().includes(userInput)
                     );
                     console.log(userInput);
                 });
@@ -633,7 +642,7 @@ $(document).ready(function() {
         }
     });
 
-  // Gérer l'état des éléments de recherche
+    // Gérer l'état des éléments de recherche
   $('#user_select').on('change', function() {
         if ($(this).val().length > 0) {
             // Désactiver toutes les checkboxes
@@ -648,7 +657,7 @@ $(document).ready(function() {
         }
     });
 
-    // Gérer l'état du champ de recherche
+        // Gérer l'état du champ de recherche
     $('#user_search').on('input', function() {
         if ($(this).val().length > 0) {
             // Désactiver toutes les checkboxes
@@ -661,6 +670,16 @@ $(document).ready(function() {
             // Retirer la classe pour rétablir l'accordéon
             $('#collapseOne').removeClass('disabled-accordion');
         }
+    });
+
+        // Gérer la suppression des inputs et activer les checkboxes
+    $('#input_container').on('click', '.remove-input', function() {
+        // Supprimer l'élément parent de l'input
+        $(this).closest('.input-group').remove();
+
+        // Activer toutes les checkboxes
+        $('input[type="checkbox"]').prop('disabled', false);
+        $('#collapseOne').removeClass('disabled-accordion');
     });
 });
 </script>
@@ -680,6 +699,10 @@ $(document).ready(function() {
 .disabled-accordion {
     opacity: 0.5; /* Diminue l'opacité pour donner un effet grisâtre */
     pointer-events: none; /* Désactive les interactions avec l'accordéon */
+}
+.toast-danger {
+    background-color: red; /* ou une autre couleur de ton choix */
+    color: white; /* pour le texte */
 }
 </style>
 </body>
