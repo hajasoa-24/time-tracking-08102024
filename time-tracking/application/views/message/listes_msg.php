@@ -101,7 +101,7 @@ $(document).ready(function(){
                         $('#container').append(`
                             <div>
                                  <a class="h-5 list-group-item list-group-item-action" href="#list-item-1">
-                                    <button type="button" class="btn position-relative messagesuser messageButton" id="expediteur-${info.message_user}" 
+                                    <button type="button" class="btn btn-light w-100 text-start position-relative  messagesuser messageButton" id="expediteur-${info.message_user}" 
                                             value="${info.message_user}"
                                             data-destinatair ="${info.message_user}"
                                             data-message_id="${info.message_id}" 
@@ -111,7 +111,7 @@ $(document).ready(function(){
                                     > 
                                         <span id="messageButton"></span>
                                         
-                                        <span>
+                                        <span class="fs-5">
                                             ${info.usr_nom != null && info.usr_prenom != null ? info.usr_nom + ' ' + info.usr_prenom : ''}
                                             ${info.message_role_id == 1 ? 'Admin' : 
                                             info.message_role_id == 2 ? 'Agent' : 
@@ -124,16 +124,14 @@ $(document).ready(function(){
                                             info.message_role_id == 9 ? 'Client' : 
                                             info.message_role_id == 10 ? 'Reporting' : ''}
                                         </span>
-
-
-                                                            
-                                    </button>
+                                                    
                                     <div class="container">
                                         <span>Objet: ${info.message_objet}</span>
                                     </div>
                                     <div class="container">
                                         <span id="limitedMessage">Message: ${info.message_message}</span> <!-- Limite le message ici -->
                                     </div>
+                                    </button>
                                 </a>
                             </div>
                         `);

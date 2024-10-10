@@ -24,37 +24,13 @@
 <section class="content">
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-3">
+                <!--Affichage des messages pour les specifique -->
+            <div class="col-md-2">
 
             <div class="card-header">
-                    <h3 class="card-title"><span class="initial" id="initial"></span><span id="username"></span></h3>
+                    <h3 class="card-title"><i class="fa fa-user-circle" aria-hidden="true"></i></span class="fs-5"></span></h3>
                 </div>  
                 <div class="list-group " style="height: 750px; overflow-y: scroll;">
-
-                    <!--<?php foreach($all_exepideur as $expediteur) {?>
-                    <div>
-                        <a class="h-5 list-group-item list-group-item-action " href="#list-item-1">
-                            
-                            <button type="button" class="btn position-relative expediteur" id="expediteur" value="<?php echo $expediteur->message_expediteur_id?>"> 
-                                <span class="rounded p-3" >E</span>
-                                <?php echo $expediteur->message_expediteur_id?>
-                                <?php foreach($nb_msg as $n) { ?>   
-                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                        <?php echo $n->count?>
-                                    </span>
-                                <?php }?>
-                            </button>
-                            <div class="container">
-                                <span>Objet:<p id="objet"></p></span>
-                            </div>
-                            <div class="container">
-                                <span>Message:</span><p id="limitedMessage"></p>
-                            </div>
-                        </a>
-                        </div>
-                    <?php }?>-->
-            
-                        
                     <div id="container" style="heigt: 300px"></div>
                     <div class="d-flex justify-content-center">
                         <div class="spinner-border" role="status" id="spinner">
@@ -62,13 +38,28 @@
                         </div>
                     </div>
                     <!--<div id="container_id" style="heigt: 300px"></div>-->
-
-
-                </div>
-        
+                </div>    
             </div>
+                <!--Fin d'affichage des messages pour les specifique-->
 
-            <div class="col-md-9">
+                <!--Affichage des messages roles-->
+            <div class="col-md-2">
+                <div class="card-header">
+                        <h3 class="card-title"><i class="fa fa-users" aria-hidden="true"></i><span class="fs-5"></span></h3>
+                    </div>  
+                    <div class="list-group " style="height: 750px; overflow-y: scroll;">  
+                        <div id="container_msg_specifique" style="heigt: 300px"></div>
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border" role="status" id="spinner_id">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                        <!--<div id="container_id" style="heigt: 300px"></div>-->
+                </div>    
+            </div>
+                <!--Fin affichage des messages roles-->
+
+            <div class="col-md-8">
             <div class="card card-primary card-outline" >
                 <div class="card-header">
                     <h3 class="card-title">Lire message</h3>
@@ -172,7 +163,7 @@ var date_msg = '';
 
 $(document).ready(function() {
     $('#spinner').show();
-                           
+    $('#spinner_id').show();                      
         $.ajax({
             url: '<?php echo site_url('message/get_message'); ?>',
             type: 'POST',
@@ -217,7 +208,7 @@ $(document).ready(function() {
                                             data-message-date="${info.message_date}"
                                     >
                                             <span id="messageButton"></span>
-                                            <span>${info.message_expediteur_name}</span>
+                                            <span  class="fs-5">${info.message_expediteur_name}</span>
 
                                                 <!-- Ajout de la badge -->
                                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="nb_msg"  style="display: ${isUserRead ? 'none' : 'block'}; >
@@ -225,13 +216,14 @@ $(document).ready(function() {
                                             </span>
                                     
                                         <div class="container2">
-                                            <span>Objet: ${limitMessage(info.message_objet)}</span>
+                                            <span >Objet: ${limitMessage(info.message_objet)}</span>
                                         </div>
                                         <div class="container2">
                                             <span id="limitedMessage">Message: ${limitMessage(info.message_message)}</span> <!-- Limite le message ici -->
                                         </div>
                                     </button>
                                 </a>
+                        
                             </div>
                         `);
                     });
@@ -252,7 +244,7 @@ $(document).ready(function() {
                             return words.slice(0, 2).join(' ');
                         }
 
-                        $('#container').append(`
+                        $('#container_msg_specifique').append(`
                             <div>
                                 <a class="h-5 list-group-item list-group-item-action" href="#">
                                     <button type="button" class="btn btn-light w-100 text-start position-relative expediteur messageButton" id="expediteur-${info.message_expediteur_id}" 
@@ -264,7 +256,7 @@ $(document).ready(function() {
                                             data-message-date="${info.message_date}"
                                     >
                                             <span id="messageButton"></span>
-                                            <span>${info.message_expediteur_name}</span>
+                                            <span  class="fs-5">${info.message_expediteur_name}</span>
 
                                                 <!-- Ajout de la badge -->
                                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="nb_msg"  style="display: ${isUserRead ? 'none' : 'block'}; >
@@ -339,6 +331,7 @@ $(document).ready(function() {
             complete: function() {
                 // Masquer le spinner une fois la requête terminée (qu'elle soit réussie ou non)
                 $('#spinner').hide();
+                $('#spinner_id').hide();
             }
         });
     })
