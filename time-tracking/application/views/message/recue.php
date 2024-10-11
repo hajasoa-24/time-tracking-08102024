@@ -53,7 +53,7 @@
                 <div class="card-header">               
                     <?php if (isset($role_data)) : ?>
                         <h3 class="card-title d-flex align-items-center">
-                            <span class="me-2 fs-6">Messages  à tous les
+                            <span class="me-2 fs-6">Messages à tous les
                                 <?php foreach ($role_data as $role) : ?>
                                     <?php echo $role->role_libelle; ?>
                                 <?php endforeach; ?>
