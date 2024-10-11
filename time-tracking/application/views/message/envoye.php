@@ -220,10 +220,10 @@
 </section>-->
 
 <script>
-    console.log('<?=  $this->session->userdata('user')['id'];?>');
+    //console.log('<?=  $this->session->userdata('user')['id'];?>');
     //console.log('<?=  $this->session->userdata('user')['nom'];?>');
     //console.log('<?=  $this->session->userdata('user')['prenom'];?>');
-    console.log('<?= $this->session->userdata('user')['nom'] . ' ' . $this->session->userdata('user')['prenom']; ?>');
+    //console.log('<?= $this->session->userdata('user')['nom'] . ' ' . $this->session->userdata('user')['prenom']; ?>');
 
         // Obtenir la date d'aujourd'hui au format YYYY-MM-DD
         const today = new Date().toISOString().split('T')[0];
@@ -287,8 +287,8 @@
                 var date = $('#date_msg').val();
                 var file = $('#file_msg').val();                   
 
-                console.log('Utilisation de user_nom:', user_nom);
-                console.log(user_expediteur);
+                //console.log('Utilisation de user_nom:', user_nom);
+                //console.log(user_expediteur);
 
                 // Vérifier si le message est vide
                 if (!message.trim()) {
@@ -422,6 +422,7 @@
 </script>
 
 <script>
+    /**debut du fonction sur la recherche d'utilisateur par usr_nom,usr_prenom,usr_matricule,usr_initiale */
             var userLists = [];
             
             $.ajax({
@@ -438,25 +439,20 @@
             }); 
 
             function populateSelect(userLists){
-
                 var $select = $('#user_select')
                 $select.empty(); // Vider le select avant de le remplir
-
                 $.each(userLists, function(index, userList) {
                     let option = $("<option>", {
                         value:  userList.usr_nom +' '+ userList.usr_prenom , 
                         text: userList.usr_nom +' '+ userList.usr_prenom + '(' +userList.usr_initiale+ '-' +userList.usr_matricule +')',
                         'data-id':userList.usr_id
                     });
-
                     $('#user_select').append(option);
-
                 })
             }
             
             $(document).on('input','#user_search', function() {
                 var userInput = $(this).val().toLowerCase(); // Récupérer la valeur et la convertir en minuscules
-
                 var filteredUserList = $.grep(userLists, function(userList) {
                     return (
                         userList.usr_nom.toLowerCase().includes(userInput) ||
@@ -464,9 +460,8 @@
                         userList.usr_matricule.toLowerCase().includes(userInput)||
                         userList.usr_initiale.toLowerCase().includes(userInput)
                     );
-                    console.log(userInput);
+                    //console.log(userInput);
                 });
-
                 populateSelect(filteredUserList); // Réafficher les suggestions filtrées
             });
             $(document).on('change', '#user_select', function() {
@@ -547,6 +542,7 @@
         // Afficher les IDs restants dans la console
         //console.log('IDs restants :', remainingIds.join(', '));
     });
+    /**Fin du fonction recherche d'utilisateur */
     
 </script>
 
@@ -558,30 +554,25 @@
             $('#input_container input').each(function() {
                 inputValues.push($(this).val());
             });
-
                 // Afficher les valeurs collectées dans la console (pour vérification)
-                console.log("Valeurs à insérer :", inputValues);
-
+                //console.log("Valeurs à insérer :", inputValues);
                 var user_destinataire = inputValues;
                 //console.log(user_destinataire);
-
-
-                $.ajax({
-                    url: '<?php echo site_url('message/test2'); ?>',
-                    type: 'POST',
-                    dataType: 'json',
-                    data : {
-                            select_users_specifique : user_destinataire,
-                       
-                    },
-                    success: function(response) {
-                        console.log(response.message);
-                    },
-                    error: function(xhr, status, error) {
-                        console.log(error);
-                        console.error('An error occurred:', error);
-                    }
-                });
+            $.ajax({
+                url: '<?php echo site_url('message/test2'); ?>',
+                type: 'POST',
+                dataType: 'json',
+                data : {
+                    select_users_specifique : user_destinataire,                  
+                },
+                success: function(response) {
+                    console.log(response.message);
+                },
+                error: function(xhr, status, error) {
+                    console.log(error);
+                    console.error('An error occurred:', error);
+                }
+            });
         });
         
 
@@ -613,7 +604,7 @@
     });*/
    
     });
-
+/**fonction test pour l'insertion du fichier */
     $(document).ready(function() {
         $('#uploadBtn').click(function() {
             var formData = new FormData($('#uploadForm')[0]);
@@ -632,6 +623,9 @@
             });
         });
     });
+/**Fin fonction test pour l'insertion du fichier */
+
+/**fonction pour metre disable les checkbox et l''input recherche */
 $(document).ready(function() {
     // Fonction pour gérer l'état des checkboxes
     $('input[type="checkbox"]').on('change', function() {
@@ -687,6 +681,7 @@ $(document).ready(function() {
         $('#collapseOne').removeClass('disabled-accordion');
     });
 });
+/**Fin fonction pour metre disable les checkbox et l''input recherche */
 </script>
 
 

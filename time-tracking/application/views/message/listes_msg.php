@@ -155,9 +155,9 @@ $(document).on('click', '.messagesuser', function() {
     var message_id =  $(this).data('message_id');
     var message_destinatair =  $(this).data('destinatair');
     var message_role =  $(this).data('message_role');
-    console.log(message_id);
-    console.log(message_destinatair);
-    console.log(message_role);
+    //console.log(message_id);
+    //console.log(message_destinatair);
+    //console.log(message_role);
     
     $('#messageDisplay').empty();
     //$('#messageDisplay').text(message); // Afficher le message dans l'élément HTML
@@ -172,9 +172,9 @@ $(document).on('click', '.messagesuser', function() {
             messageROLEID : message_role,
         },
         success: function(response) {
-            console.log(response.lists_msg);
-            console.log(response.messages_lus);
-            console.log(response.messages_non_lus);
+            //console.log(response.lists_msg);
+            //console.log(response.messages_lus);
+            //console.log(response.messages_non_lus);
             var message = response.lists_msg;
             var userLus = response.messages_lus;
             var userNonLus = response.messages_non_lus;
@@ -257,8 +257,8 @@ $(document).on('click', '.messagesuser', function() {
                 // Ajouter la modal au DOM
                 $('body').append(modalHtml);
 
-            // Modal HTML
-            const modalHtml2 = `
+                // Modal HTML
+                const modalHtml2 = `
                 <div class="modal fade" id="modal_user_lus" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
@@ -328,8 +328,8 @@ $(document).on('click', '.messagesuser', function() {
                 </div>
             `);
 
-            // Modal HTML
-            const modalHtml3 = `
+                // Modal HTML
+                const modalHtml3 = `
                 <div class="modal fade" id="modal_user_nonlus" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
@@ -541,8 +541,8 @@ $(document).on('click',  '.confirmer_modifier', function() {
     var objet = $('#message-objet').val();
 
     // Afficher la valeur dans la console (ou faire autre chose avec)
-    console.log('message_id :', messageId);
-    console.log('Nouveau message :', message);
+    //console.log('message_id :', messageId);
+    //console.log('Nouveau message :', message);
   
   
     $.ajax({
@@ -555,7 +555,7 @@ $(document).on('click',  '.confirmer_modifier', function() {
             message : message,
         },
         success: function(response) {
-            console.log(response.message);
+            //console.log(response.message);
                
                     // Afficher le message de succès
                 $('#success-message').text(response.message).fadeIn().delay(3000).fadeOut(); // Affiche le message pendant 3 secondes
@@ -570,15 +570,14 @@ $(document).on('click',  '.confirmer_modifier', function() {
 /**Fin du fonction modification */
 
 
-/**fonction pour supprimer une message*/
+/**Debut fonction pour supprimer une message*/
 $(document).on('click',  '.supprimer_msg', function() {
        // Récupérer l'ID du bouton cliqué
     var messageId = $(this).attr('id');
 
-// Afficher la valeur dans la console 
-console.log('message_id :', messageId);
-$('.confirmer_supprimer').data('message-id', messageId);
-   
+        // Afficher la valeur dans la console 
+        //console.log('message_id :', messageId);
+    $('.confirmer_supprimer').data('message-id', messageId);
 });
 // Gestion du clic sur le bouton de confirmation dans la modal
 $(document).on('click', '.confirmer_supprimer', function() {
@@ -590,7 +589,7 @@ $(document).on('click', '.confirmer_supprimer', function() {
         dataType: 'json',
         data: { id_message : messageId },
         success: function(response) {
-                console.log(response.message);
+                //console.log(response.message);
                     // Mettre à jour l'interface : enlever l'élément du DOM
                 $(`#message-${messageId}`).remove(); 
 

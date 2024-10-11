@@ -114,7 +114,7 @@ var message ='';
 $(document).ready(function() {
     $('.expediteur').on('click', function() {
         var expediteurId = $(this).val(); // Récupérer la valeur du bouton
-        console.log('ID de l\'expéditeur:', expediteurId);
+        //console.log('ID de l\'expéditeur:', expediteurId);
             // Afficher la variable dans le span
         $('#nomexpediteur').text(expediteurId);
         var val = expediteurId;
@@ -126,7 +126,7 @@ $(document).ready(function() {
                 expediteur : val,
             },
             success: function(response) {
-                console.log(response.data);
+                //console.log(response.data);
                 tab_message = response.data;
 
                     // Vider le conteneur avant d'afficher les nouveaux messages
@@ -134,7 +134,7 @@ $(document).ready(function() {
 
                 $.each(tab_message, function(index, msg) {
                     message = msg.message_message;
-                    console.log(message);
+                    //console.log(message);
                         // Créer un élément HTML pour chaque message
                     var messageElement = $('<div class="message"></div>').text(message);
                         // Ajouter le nouvel élément au conteneur
@@ -188,10 +188,10 @@ $(document).ready(function() {
                     usrRole: usr_role,
             },*/
             success: function(response) {
-                console.log(response.messages); // Affiche les messages
+                //console.log(response.messages); // Affiche les messages
                 infosmg = response.messages;
                 role_msg = response.messages_role;
-                console.log(role_msg);
+                //console.log(role_msg);
                                    
             //nb_msg = response.message_counts;
 
@@ -250,7 +250,7 @@ $(document).ready(function() {
                 } else {
                     $.each(role_msg, function(index, info) {
                         var usr_mane = info.message_expediteur_id;
-                        console.log(info.message_status);
+                        //console.log(info.message_status);
                         const message_lus = info.message_lus.split(',');
                         const isUserRead = message_lus .includes(usr_id.toString());
                             // Fonction pour limiter le message à 2 mots
@@ -418,7 +418,7 @@ $(document).ready(function() {
     $(document).ready(function() {
 
         var username = $('#userInfo').data('username');
-        console.log(username); // Affiche la valeur dans la console
+        //console.log(username); // Affiche la valeur dans la console
             $.ajax({
                 //url: '<?php echo site_url('message/find_user'); ?>',
                 type: 'POST',
@@ -576,8 +576,9 @@ $(document).ready(function() {
 
 /**Bouton clicke pour afficher les messages pour le Roles*/
 $(document).on('click', '.expediteur', function() {
+    hasNewMessage = false;
     var nom = $(this).val();
-    console.log(nom);
+    //console.log(nom);
     const message = $(this).data('message'); // Récupérer le message correspondant
     $(this).find('#nb_msg').hide();
     $('#spinner1').show();
@@ -598,7 +599,7 @@ $(document).on('click', '.expediteur', function() {
             date_msg : messageDate,
         },
         success: function(response) {
-            console.log(response.messages_role);
+            //console.log(response.messages_role);
             const message = response.messages_role;
 
             $('#messageDisplay').empty();
@@ -633,7 +634,7 @@ $(document).on('click', '.expediteur', function() {
 /**Bouton clicke pour afficher les messages specifiques */
 $(document).on('click', '.expediteur2', function() {
     hasNewMessage = false;
-    console.log(hasNewMessage);
+    //console.log(hasNewMessage);
     
     var nom = $(this).val();
     //console.log(nom);
@@ -657,7 +658,7 @@ $(document).on('click', '.expediteur2', function() {
             date_msg : messageDate,
         },
         success: function(response) {
-            console.log(response.data);
+            //console.log(response.data);
      
             const message_specifique = response.data;
 

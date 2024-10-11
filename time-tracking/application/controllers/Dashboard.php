@@ -654,14 +654,13 @@ class Dashboard extends MY_Controller {
      * Envoye du message
      */
 
-     public function envoye() {
-
+    public function envoye() 
+    {
         $header = ['pageTitle' => 'Suivi présence - TimeTracking'];
 
         $this->load->model('role_model');
         $listRole = $this->role_model->getAllRole();
         $this->load->model('message_model');
- 
         $this->load->view('common/header',  $header);
         $this->load->view('common/sidebar', $this->_sidebar);
         $this->load->view('common/top', array('top' => $this->_top));
@@ -675,7 +674,6 @@ class Dashboard extends MY_Controller {
      */
     public function recue() 
     {
-        
         $header = ['pageTitle' => 'Suivi présence - TimeTracking'];
 
         $this->load->model('message_model');
@@ -692,24 +690,21 @@ class Dashboard extends MY_Controller {
             'all_exepideur' =>$all_exepideur,
             'role_data' => $results,
         ));
-        $this->load->view('common/footer', []);
-        
+        $this->load->view('common/footer', []);  
     }
 
     /**
      * Affichez lites_sms
      */
     public function listes() 
-    {
-        
+    { 
         $header = ['pageTitle' => 'Suivi présence - TimeTracking'];
  
         $this->load->view('common/header',  $header);
         $this->load->view('common/sidebar', $this->_sidebar);
         $this->load->view('common/top', array('top' => $this->_top));
         $this->load->view('message/listes_msg');
-        $this->load->view('common/footer', []);
-        
+        $this->load->view('common/footer', []); 
     }
     
 
