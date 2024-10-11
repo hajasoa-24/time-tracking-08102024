@@ -23,7 +23,7 @@
                     <div class="card-body">
                         <div class="form-group">
                             <div>
-                                <label for="destinataire">Destinataire</label>
+                                <label for="destinataire" class="text-center fs-3">Destinataire</label>
                             </div>
                             <div class="container-fluid">
                                 <div class="row">
@@ -31,7 +31,7 @@
                                         <div class="accordion-item" >
                                             <h2 class="accordion-header">
                                                 <button  class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                                Role
+                                                Rôle 
                                                 </button>
                                             </h2>
                                             <div id="collapseOne" class="accordion-collapse collapse show ml-3" data-coreui-parent="#accordionExample">
@@ -91,6 +91,7 @@
                                 id="date_msg"
                                 placeholder=""
                                 value=""
+                                readonly
                             />
                             </div>
                         </div>
@@ -321,6 +322,12 @@
                             $('#date_msg').val('');
                             $('#file_msg').val('');
 
+                            // Activer les champs des accordions
+                            $('#user_search').prop('disabled', false);
+                            $('#user_select').prop('disabled', false);
+                            // Active les checkboxes si nécessaire
+                            $('input[id=role_msg]').prop('disabled', false);
+
                             // Afficher le toast pour confirmation
                             $('#toast').text('Message envoyé avec succès.'); // Message de confirmation
                             $('#toast').fadeIn().delay(3000).fadeOut();
@@ -333,9 +340,7 @@
                         }
                     });
                 }
-
-
-                });
+            });
 
                 /**fonction ajax avec le fichier */
                 /*$(document).ready(function() {

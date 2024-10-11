@@ -6,7 +6,7 @@ class Message_model extends CI_Model{
     private $_table = "tr_message";
     private $_tableUser = "tr_user";
     private $_tabletest = "test";
-    private $_role = "tr_message_role";
+    private $_role = "tr_role";
     private $_tUser = "tr_user";
 
     public function __construct() 
@@ -73,6 +73,13 @@ class Message_model extends CI_Model{
         $query = $this->db->get($this->_tableUser); 
         return $query->result();
     }
+
+    public function select_role_libelle($roleUser){
+        $this->db->select("role_libelle");
+        $this->db->where('role_id',$roleUser);
+        $query = $this->db->get($this->_role); 
+        return $query->result();
+    }
         //fonction pour testé l'insertion du fichier
     public function insert_file($data){    
         return $this->db->insert($this->_tabletest, $data);
@@ -95,6 +102,7 @@ class Message_model extends CI_Model{
                          "m.message_expediteur_id = last_messages.message_expediteur_id 
                           AND m.message_date = last_messages.last_message_date");
         $this->db->where('m.message_user', $userId);
+        $this->db->order_by('m.message_date', ' DESC');
         $this->db->group_by('m.message_expediteur_id'); 
         $msg_query = $this->db->get($this->_table);
         $messages_id = $msg_query->result();
@@ -117,7 +125,7 @@ class Message_model extends CI_Model{
         
         // Filtrer par rôle
         $this->db->where('m.message_role_id', $usrRole);
-        $this->db->order_by('m.message_date', ' ESC');
+        $this->db->order_by('m.message_date', ' DESC');
         $this->db->group_by('m.message_expediteur_id');
         
         $role_query = $this->db->get($this->_table);

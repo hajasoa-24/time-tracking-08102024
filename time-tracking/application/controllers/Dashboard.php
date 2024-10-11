@@ -666,12 +666,7 @@ class Dashboard extends MY_Controller {
         $this->load->view('common/sidebar', $this->_sidebar);
         $this->load->view('common/top', array('top' => $this->_top));
         $this->load->view('message/envoye' , array('listRole' => $listRole ,  'top' => $this->_top));
-        $this->load->view('common/footer', []);
-
-       
-
-
-       
+        $this->load->view('common/footer', []);      
    
     }
 
@@ -686,6 +681,8 @@ class Dashboard extends MY_Controller {
         $this->load->model('message_model');
         $msg_user = $this->input->post('username_msg');
         $all_exepideur = $this->message_model->select_all_expediteur();
+        $roleUser = $this->session->userdata('user')['role'];
+        $results = $this->message_model->select_role_libelle($roleUser);
         $nb_msg = $this->message_model->Number_msg();
         $this->load->view('common/header',  $header);
         $this->load->view('common/sidebar', $this->_sidebar);
@@ -693,7 +690,7 @@ class Dashboard extends MY_Controller {
         $this->load->view('message/recue' ,array(
             'nb_msg'=>$nb_msg,
             'all_exepideur' =>$all_exepideur,
-           
+            'role_data' => $results,
         ));
         $this->load->view('common/footer', []);
         

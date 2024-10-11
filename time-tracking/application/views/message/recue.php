@@ -18,6 +18,10 @@
 #nb_msg2 {
     display: none;
 }
+.card-title {
+    display: flex;
+    align-items: center;
+}
 
 
 </style>
@@ -26,9 +30,11 @@
         <div class="row">
                 <!--Affichage des messages pour les specifique -->
             <div class="col-md-2">
-
-            <div class="card-header">
-                    <h3 class="card-title"><i class="fa fa-user-circle" aria-hidden="true"></i></span class="fs-5"></span></h3>
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span class="me-2 fs-6">Messages pour vous</span>
+                        <i class="fa fa-user" aria-hidden="true"></i>
+                    </h3>
                 </div>  
                 <div class="list-group " style="height: 750px; overflow-y: scroll;">
                     <div id="container" style="heigt: 300px"></div>
@@ -44,11 +50,20 @@
 
                 <!--Affichage des messages roles-->
             <div class="col-md-2">
-                <div class="card-header">
-                        <h3 class="card-title"><i class="fa fa-users" aria-hidden="true"></i><span class="fs-5"></span></h3>
-                    </div>  
-                    <div class="list-group " style="height: 750px; overflow-y: scroll;">  
-                        <div id="container_msg_specifique" style="heigt: 300px"></div>
+                <div class="card-header">               
+                    <?php if (isset($role_data)) : ?>
+                        <h3 class="card-title d-flex align-items-center">
+                            <span class="me-2 fs-6">Messages  à tous les
+                                <?php foreach ($role_data as $role) : ?>
+                                    <?php echo $role->role_libelle; ?>
+                                <?php endforeach; ?>
+                            </span>
+                            <i class="fa fa-users" aria-hidden="true"></i>
+                        </h3>
+                    <?php endif; ?>      
+                </div>  
+                <div class="list-group " style="height: 750px; overflow-y: scroll;">  
+                    <div id="container_msg_specifique" style="heigt: 300px"></div>
                     <div class="d-flex justify-content-center">
                         <div class="spinner-border" role="status" id="spinner_id">
                             <span class="visually-hidden">Loading...</span>
@@ -211,15 +226,15 @@ $(document).ready(function() {
                                             <span  class="fs-5">${info.message_expediteur_name}</span>
 
                                                 <!-- Ajout de la badge -->
-                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="nb_msg"  style="display: ${isUserRead ? 'none' : 'block'}; >
+                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="nb_msg2"  style="display: ${isUserRead ? 'none' : 'block'}; >
                                                 <span class="visually-hidden"></span>
                                             </span>
                                     
                                         <div class="container2">
-                                            <span >Objet: ${limitMessage(info.message_objet)}</span>
+                                            <span class="fs-6">Objet: ${limitMessage(info.message_objet)}</span>
                                         </div>
                                         <div class="container2">
-                                            <span id="limitedMessage">Message: ${limitMessage(info.message_message)}</span> <!-- Limite le message ici -->
+                                            <span id="limitedMessage" class="fs-6">Message: ${limitMessage(info.message_message)}</span> <!-- Limite le message ici -->
                                         </div>
                                     </button>
                                 </a>
@@ -264,10 +279,10 @@ $(document).ready(function() {
                                             </span>
                                     
                                         <div class="container2">
-                                            <span>Objet: ${limitMessage(info.message_objet)}</span>
+                                            <span class="fs-6">Objet: ${limitMessage(info.message_objet)}</span>
                                         </div>
                                         <div class="container2">
-                                            <span id="limitedMessage">Message: ${limitMessage(info.message_message)}</span> <!-- Limite le message ici -->
+                                            <span id="limitedMessage" class="fs-6">Message: ${limitMessage(info.message_message)}</span> <!-- Limite le message ici -->
                                         </div>
                                     </button>
                                 </a>

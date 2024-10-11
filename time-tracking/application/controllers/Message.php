@@ -496,8 +496,15 @@ class Message extends My_Controller{
     public function seacrch()
     {
         $this->load->model('message_model');
-
         $results = $this->message_model->findUser();
+        echo json_encode(["data" => $results]);
+    }
+
+    public function selectUserRole()
+    {
+        $this->load->model('message_model');
+        $roleUser = $this->session->userdata('user')['role'];
+        $results = $this->message_model->select_role_libelle($roleUser);
         echo json_encode(["data" => $results]);
     }
 
