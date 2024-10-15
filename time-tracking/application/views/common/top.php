@@ -1523,6 +1523,7 @@
 
   </script>
 <script>
+
      /**fonction verification des nouveaux messages */
     //console.log('<?=  $this->session->userdata('user')['id'];?>');
     //console.log('<?=  $this->session->userdata('user')['role'];?>');
@@ -1540,8 +1541,7 @@
                 userRole: user_role, 
             },
             success: function(data) {
-                const result = JSON.parse(data);
-                
+                const result = JSON.parse(data);           
                 const newMessages = result.newMessages; // Nouveaux messages non lus
                 const unreadMessages = result.unreadMessages; // Messages non lus
 
@@ -1563,22 +1563,18 @@
                 console.error('Erreur lors de la vérification des nouveaux messages :', error);
             }
         });
-
     }
-
     function updateBadge() {
         const badge = $('#badges');
         if (hasNewMessage) {
             badge.show(); // Affiche le badge
         }
     }
-
     $('.messageButton').click(function() {
         console.log(hasNewMessage);
         hasNewMessage = false; // Réinitialise l'état
         updateBadge(); // Met à jour le badge
     });
-
     // Vérifie les nouveaux messages toutes les 10 minutes
     setInterval(checkForNewMessages, 600000);
 

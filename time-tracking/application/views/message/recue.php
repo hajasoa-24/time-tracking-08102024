@@ -351,66 +351,6 @@ $(document).ready(function() {
         });
     })
 
-
-/*function checkForNewMessages2(usr_expediteur_id) { 
-    $.ajax({ 
-    url: '<?= site_url('message/check_new_messages') ?>',
-    method: 'GET',
-    data: {
-        userId: user_id,
-        userRole: user_role,
-        usr_expediteur_id: usr_expediteur_id,
-    },
-    success: function(data) {
-        const result = JSON.parse(data);
-        
-        const newMessages = result.newMessages; // Nouveaux messages non lus role
-        const unreadMessages = result.unreadMessages; // Messages non lus id_user message specifique  
-
-        // Vérifier si des nouveaux messages existent
-        if (newMessages.length > 0) {
-            hasNewMessage2 = true;
-            updateBadge2(); // Mettre à jour le badge
-        }
-
-        // Vous pouvez aussi traiter les messages non lus ici si nécessaire
-        if (unreadMessages.length > 0) {
-            // Traiter les messages non lus
-            hasNewMessage3 = true;
-            updateBadge();
-            console.log('Messages non lus:', unreadMessages);
-        }
-    },
-    error: function(xhr, status, error) {
-        console.error('Erreur lors de la vérification des nouveaux messages :', error);
-    }
-});
-
-}
-
-function updateBadge() {
-    const badge = $('#nb_msg');
-    if (hasNewMessage3) {
-        badge.show(); // Affiche le badge
-    }
-}
-function updateBadge2() {
-    const badge = $('#nb_msg2');
-    if (hasNewMessage2) {
-        badge.show(); // Affiche le badge
-    }
-}
-// Vérifie les nouveaux messages toutes les 5 secondes
-setInterval(() => {
-    $('.messageButton').each(function() {
-        const usr_expediteur_id = $(this).data('expediteur');
-        checkForNewMessages2(usr_expediteur_id);
-    });
-}, 600000);
-*/
-
-
-
 $(document).ready(function() {
     var message = [];
     var userName = '';
@@ -599,26 +539,45 @@ $(document).on('click', '.expediteur', function() {
             date_msg : messageDate,
         },
         success: function(response) {
-            //console.log(response.messages_role);
+            var base_url = '<?php echo base_url('uploads/'); ?>';
+
+
+            console.log(response.messages_role);
             const message = response.messages_role;
 
             $('#messageDisplay').empty();
             $('#messageDisplay_specifique').empty();
             
-            $.each(message, function(index, msg){
+            $.each(message, function(index, msg) { 
+                var nomDuFichier = msg.message_fichier_path.split('\\').pop().split('/').pop();
                 $('#messageDisplay').append(`
                     <div class="card-body p-0">
                         <div class="mailbox-read-info">
-                            <h5>Objet:${msg.message_objet}</h5>
+                            <h5>Objet: ${msg.message_objet}</h5>
                             <h6>Expéditeur: ${msg.message_expediteur_name}
                             <span class="mailbox-read-time float-right">${msg.message_date}</span></h6>
                         </div>
                         <div class="mailbox-read-message">
-                            <p ><span class="ml-4 mt-4" style="height: 100px" id="messagedisplay">${msg.message_message}</span></p>
-                        </div>                                             
+                            <p><span class="ml-4 mt-4" style="height: 100px" id="messagedisplay">${msg.message_message}</span></p>
+                        </div>
+                        <div class="mailbox-attachment-info">
+                            ${nomDuFichier ? `
+                                <a href="${base_url}${nomDuFichier}" class="mailbox-attachment-name" target="_blank">
+                                    <i class="fa fa-paperclip"></i> Ouvrir ${nomDuFichier}
+                                </a>
+                                <span class="mailbox-attachment-size clearfix mt-1">
+                                    <a href="${base_url}${nomDuFichier}" class="btn btn-default btn-sm float-right" download>
+                                        <i class="fa fa-download" aria-hidden="true"></i>
+                                        <span>Télécharger</span>
+                                    </a>
+                                </span>
+                            ` : `
+                                <div></div>
+                            `}
+                        </div>                                            
                     </div>
-                `)
-            })
+                `);
+            });
         },
         error: function(xhr, status, error) {
             console.error('An error occurred:', error);
@@ -627,7 +586,6 @@ $(document).on('click', '.expediteur', function() {
             // Cacher le spinner après la requête (qu'elle soit réussie ou en erreur)
             $('#spinner1').hide();
         }
-
     })
 });
 
@@ -783,273 +741,13 @@ console.log(usr_nom);
         },
     });
 }*/
-/*let hasNewMessage = false;
-
-if (Notification.permission !== "granted") {
-    Notification.requestPermission();
-}
-
-function notifyUser(messageCount) {
-    if (Notification.permission === "granted") {
-        const notification = new Notification("Nouveaux messages", {
-            body: `${messageCount} nouveau(x) message(s) reçu(s)`,
-            // icon: 'path/to/icon.png' // Optionnel
-        });
-
-        notification.onclick = function() {
-            window.focus(); // Ramener l'utilisateur sur la page
-        };
-    }
-}
-
-// Vérifie la permission pour les notifications
-if (Notification.permission !== "granted") {
-    Notification.requestPermission();
-}
-
-function notifyUser(messageCount) {
-    if (Notification.permission === "granted") {
-        const notification = new Notification("Nouveaux messages", {
-            body: `${messageCount} nouveau(x) message(s) reçu(s)`,
-            // icon: 'path/to/icon.png' // Optionnel, chemin vers une icône
-        });
-
-        notification.onclick = function() {
-            window.focus(); // Ramène l'utilisateur sur la page
-        };
-    }
-}
-
-function checkForNewMessages() { 
-    $.ajax({
-        url: '<?= site_url('message/check_new_messages') ?>',
-        method: 'GET',
-        data: {
-            userId: usr_id, 
-        },
-        success: function(data) {
-            const messages = JSON.parse(data);
-            if (messages.length > 0) {
-                hasNewMessage = true;
-                updateBadge();
-                notifyUser(messages.length); // Notifier l'utilisateur
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Erreur lors de la vérification des nouveaux messages :', error);
-        }
-    });
-}
-
-function updateBadge() {
-    const badge = $('#badge');
-    if (hasNewMessage) {
-        badge.show(); // Affiche le badge
-    }
-}
-
-$('.messageButton').click(function() {
-    console.log(hasNewMessage);
-    hasNewMessage = false; // Réinitialise l'état
-    updateBadge(); // Met à jour le badge
-    // Afficher les messages ici (ex: ouvrir un modal, rediriger, etc.)
-});
-
-// Vérifie les nouveaux messages toutes les 5 secondes
-setInterval(checkForNewMessages, 5000);*/
 
 
-</script>
-<script>
-$(document).on('click', '.import_file', function() {
-    $.ajax({
-        url: '<?= site_url('message/mark') ?>',
-        type: 'POST',
-        dataType: 'json',
-        success: function(response) {
-            if (response.success) {
-                $('#ton_element_html').html(response.content); // Afficher le contenu dans l'élément HTML
-            } else {
-                console.error(response.message);
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Erreur AJAX : ' + error);
-        }
-    });
-});
-
-  //select_message_envoye(usr_id);
-                                    // Afficher le spinner avant de faire la seconde requête
-                        /*$('#spinner').show();
-                        /**fonction pour recupere le nom de l'expediteur */
-                        /*$.ajax({
-                            url:'<?php echo site_url('message/get_message'); ?>',
-                            type:'POST',
-                            dataType: 'json',
-                            data : {
-                                userId : usr_id,
-                                usrRole : usr_role,
-                            },
-                            success: function(response) {
-                                console.log(response.messages); // Affiche les messages
-                                infosmg = response.messages;
-                                role_msg = response.messages_role;
-                              
-                                console.log(response.message_counts);
-                                nb_msg = response.message_counts
 
 
-                                if(response === 0) {
-                                    $('#container').append('<div class="alert alert-info">Aucun message à afficher.</div>');
-                                }else{
 
-                                }
-                                $.each(infosmg, function(index, info){
-                                    var usr_mane = info.message_expediteur_id;
-                                    
-                                        // Fonction pour limiter le message à 2 mots
-                                    function limitMessage(msg) {
-                                        const words = msg.split(' '); 
-                                        return words.slice(0, 2).join(' '); 
-                                    }
-                       
-                                    $('#container').append(`
-                                        <div>
-                                            <a class="h-5 list-group-item list-group-item-action" href="#list-item-1">
-                                                <button type="button" class="btn position-relative expediteur messageButton" id="expediteur-${info.message_expediteur_id}" 
-                                                    value="${info.message_expediteur_id}" 
-                                                    data-message="${info.message_message}" 
-                                                    data-objet="${info.message_objet}" 
-                                                    data-expediteur="${info.message_expediteur_id}"> 
-                                                    <span id="messageButton"></span>
-                                                    <span>${info.message_expediteur_name}</span>
 
-                                                    <!-- Ajout de la badge -->
-                                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="nb_msg">
-                                                        <span class="visually-hidden">unread messages</span>
-                                                    </span>
-                                                </button>
-                                                <div class="container">
-                                                    <span>Objet: ${limitMessage(info.message_objet)}</span>
-                                                </div>
-                                                <div class="container">
-                                                    <span id="limitedMessage">Message: ${limitMessage(info.message_message)}</span> <!-- Limite le message ici -->
-                                                </div>
-                                            </a>
-                                        </div>
-                                    `);
-                                });
-                                
-                                //affichage message role de l'utilisateure dans l'id #container_id
 
-                                $.each(role_msg, function(index, info){
-                                    var usr_mane = info.message_expediteur_id;
-                                    
-                                        // Fonction pour limiter le message à 2 mots
-                                    function limitMessage(msg) {
-                                        const words = msg.split(' '); 
-                                        return words.slice(0, 2).join(' '); 
-                                    }
-                       
-                                    $('#container_id').append(`
-                                        <div>
-                                            <a class="h-5 list-group-item list-group-item-action" href="#list-item-1">
-                                                <button type="button" class="btn position-relative expediteur messageButton" id="expediteur-${info.message_expediteur_id}" 
-                                                    value="${info.message_expediteur_id}" 
-                                                    data-message="${info.message_message}" 
-                                                    data-objet="${info.message_objet}" 
-                                                    data-expediteur="${info.message_expediteur_id}"
-                                                    data-message-date="${info.message_date}"
-                                                >
-                                                    
-                                                    <span id="messageButton"></span>
-                                                    <span>${info.message_expediteur_name}</span>
-
-                                                    <!-- Ajout de la badge -->
-                                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="nb_msg">
-                                                        <span class="visually-hidden">unread messages</span>
-                                                    </span>
-                                                </button>
-                                                <div class="container">
-                                                    <span>Objet: ${limitMessage(info.message_objet)}</span>
-                                                </div>
-                                                <div class="container">
-                                                    <span id="limitedMessage">Message: ${limitMessage(info.message_message)}</span> <!-- Limite le message ici -->
-                                                </div>
-                                            </a>
-                                        </div>
-                                    `);
-                                });
-
-                                let hasNewMessage = false;
-
-                                if (Notification.permission !== "granted") {
-                                    Notification.requestPermission();
-                                }
-
-                                function notifyUser(messageCount) {
-                                    if (Notification.permission === "granted") {
-                                        const notification = new Notification("Nouveaux messages", {
-                                            body: `${messageCount} nouveau(x) message(s) reçu(s)`,
-                                            // icon: 'path/to/icon.png' // Optionnel
-                                        });
-
-                                        notification.onclick = function() {
-                                            window.focus(); // Ramener l'utilisateur sur la page
-                                        };
-                                    }
-                                }
-
-                                function checkForNewMessages() {
-                                    $.ajax({
-                                        url: '<?= site_url('message/check_new_messages') ?>',
-                                        method: 'GET',
-                                        data: {
-                                            userId: usr_id, 
-                                        },
-                                        success: function(data) {
-                                            const messages = JSON.parse(data);
-                                            if (messages.length > 0) {
-                                                hasNewMessage = true;
-                                                updateBadge();
-                                                notifyUser(messages.length); // Notifier l'utilisateur
-                                            }
-                                        },
-                                        error: function(xhr, status, error) {
-                                            console.error('Erreur lors de la vérification des nouveaux messages :', error);
-                                        }
-                                    });
-                                }
-
-                                function updateBadge() {
-                                    const badge = $('#badge');
-                                    if (hasNewMessage) {
-                                        badge.show(); // Affiche le badge
-                                    }
-                                }
-
-                                $('.messageButton').click(function() {
-                                    console.log(hasNewMessage);
-                                    hasNewMessage = false; // Réinitialise l'état
-                                    updateBadge(); // Met à jour le badge
-                                    // Afficher les messages ici (ex: ouvrir un modal, rediriger, etc.)
-                                });
-
-                                // Vérifie les nouveaux messages toutes les 5 secondes
-                                setInterval(checkForNewMessages, 5000);
-                                
-
-                            /*},
-                            error: function(xhr, status, error) {
-                                console.error('An error occurred:', error);
-                            },
-                            complete: function() {
-                                // Masquer le spinner une fois la requête terminée (qu'elle soit réussie ou non)
-                                $('#spinner').hide();
-                            }
-                        })*/
 </script>
 
 </section>
-<style>

@@ -109,7 +109,7 @@ public function select_message($userId,$usrRole)
 public function verification_message_status($message_id ,$dest_id, $dest_role, $exped_id, $date_msg) 
 {
    
-    $this->db->select("message_expediteur_id, message_expediteur_name, message_objet, message_message, message_date, message_status, message_lus");
+    $this->db->select("message_expediteur_id, message_expediteur_name, message_objet, message_message, message_date, message_status, message_lus,message_fichier_path");
     $this->db->where('message_role_id', $dest_role); // Vérifier par rôle
     $this->db->where('message_expediteur_id', $exped_id);
     $this->db->order_by('message_date', 'DESC');
@@ -159,7 +159,7 @@ public function verification_message_status($message_id ,$dest_id, $dest_role, $
 public function verification_message_status_userId($message_id, $dest_id, $dest_role, $exped_id, $date_msg) 
 {
     // Sélection des messages spécifiques
-    $this->db->select("message_expediteur_id, message_expediteur_name, message_objet, message_message, message_date, message_status, message_lus");
+    $this->db->select("message_expediteur_id, message_expediteur_name, message_objet, message_message, message_date, message_status, message_lus,message_fichier_path");
     $this->db->where('message_user', $dest_id);
     $this->db->where('message_expediteur_id', $exped_id);
     $this->db->order_by('message_date', 'DESC');
@@ -239,6 +239,7 @@ public function select_allmsg_send($message_destinatair, $expediteur_id, $messag
         m.message_objet,
         m.message_user,
         m.message_date,
+        m.message_fichier_path,
         u.usr_nom,
         u.usr_prenom
     ');

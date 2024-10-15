@@ -7,9 +7,9 @@
 </head>
 <body>
 
-<section class="content">
+<!--<section class="content">
     <div class="container-fluid">    
-            <div class="col-md-100">
+        <div class="col-md-100">
             <form action="<?php echo site_url('message/insertMessage'); ?>" method="post"></form>
                 <div class="card card-primary card-outline">
                     <div class="card-header">
@@ -66,8 +66,8 @@
                                             </div>
                                             <div id="collapseTwo" class="accordion-collapse collapse show ml-3 mr-2" data-coreui-parent="#activite">
                                                 <select class="form-control mb-2 ml-0 w-60" id="user_select" multiple required></select>
-                                                <!--<input type="text" id="selected_users" class="form-control" placeholder="Sélectionnés" readonly>-->
-                                                <div id="input_container"></div> <!-- Conteneur pour les nouveaux inputs -->                                            
+                                                <input type="text" id="selected_users" class="form-control" placeholder="Sélectionnés" readonly>
+                                                <div id="input_container"></div>  Conteneur pour les nouveaux inputs                                            
                                             </div>
                                         </div>
                                      </div>
@@ -109,26 +109,18 @@
                             
                                 <button type="submit" id="myButton"  class="btn btn-primary" ><i class="fa fa-paper-plane"></i></button>
                             </div>
-                                <!--<button id="getValues">Get Selected Values</button>-->
+                                <button id="getValues">Get Selected Values</button>
                         </div>
-
-                    
                     </div>
-
                 </div>
-
              </form>
-
-
             <div id="message"></div>
- 
-            </div>
-
+        </div>
     </div>
 <div id="userInfo" data-username="<?= $top['username'] ?>"></div> 
-</section> 
+</section> --> 
         <!--Formulaire avec le fichier-->
-<!--<section class="content">
+<section class="content">
     <div class="container-fluid">    
         <div class="col-md-100">
             <form  method="post" id="mainForm" enctype="multipart/form-data">
@@ -166,22 +158,24 @@
                                         </div>
                                     </div>
                                     <div class="accordion col-md-6" style="width: 50%;" id="activite">
-                                        <div class="accordion-item">
+                                        <div class="accordion-item" >
                                             <h2 class="accordion-header">
-                                                <button class="accordion-button" type="button" data-coreui-toggle="collapse" data-coreui-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
-                                                    User
-                                                </button>
+                                            <button class="accordion-button" type="button" data-coreui-toggle="collapse" data-coreui-target="#collapseTwo" aria-expanded="true" aria-controls="collapseOne">
+                                                User
+                                            </button>
                                             </h2>
                                             <div id="collapseTwo" class="accordion-collapse collapse show ml-3" data-coreui-parent="#activite">
-                                                <form class="d-flex mt-2 mb-2" role="search">
+                                               <form class="d-flex mt-2 mb-2" role="search">
                                                     <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="activite" id="user_search">
                                                 </form> 
                                             </div>
                                             <div id="collapseTwo" class="accordion-collapse collapse show ml-3 mr-2" data-coreui-parent="#activite">
                                                 <select class="form-control mb-2 ml-0 w-60" id="user_select" multiple required></select>
-                                                <div id="input_container"></div>  Conteneur pour les nouveaux inputs                                              
+                                                <!--<input type="text" id="selected_users" class="form-control" placeholder="Sélectionnés" readonly>-->
+                                                <div id="input_container"></div>  <!--Conteneur pour les nouveaux inputs-->                                            
                                             </div>
                                         </div>
+                                     </div>
                                     </div>
                                 </div>
                             </div>
@@ -196,12 +190,12 @@
                         <div class="form-group row t-2">
                             <label for="edit_user_dateembauche" class="col-sm-2 col-form-label">Date</label>
                             <div class="col-sm-10">
-                                <input type="date" name="date_msg" class="form-control" id="date_msg" />
+                                <input type="date" name="date_msg" class="form-control" id="date_msg" readonly/>
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <input class="form-control" type="file" id="file_msg" multiple name="fichiers[]">
+                            <input class="form-control" type="file" id="file_msg"   multiple name="fichiers[]">
                         </div>
 
                         <div id="message"></div>
@@ -217,7 +211,7 @@
         </div>
     </div>
     <div id="userInfo" data-username="<?= $top['username'] ?>"></div> 
-</section>-->
+</section>
 
 <script>
     //console.log('<?=  $this->session->userdata('user')['id'];?>');
@@ -260,8 +254,8 @@
                 });
                 
             });*/
-                /**fonction pour l'envoyer du message */   
-            $('#myButton').click(function () {
+                /**fonction pour envoyer un message */   
+            /*$('#myButton').click(function () {
                 const inputValues = [];
 
                 // Collecter les valeurs des inputs
@@ -340,10 +334,10 @@
                         }
                     });
                 }
-            });
+            });*/
 
                 /**fonction ajax avec le fichier */
-                /*$(document).ready(function() {
+                $(document).ready(function() {
                     $('#myButton').click(function () {
                         var formData = new FormData($('#mainForm')[0]); // Utiliser le formulaire principal
 
@@ -352,48 +346,81 @@
                         $('#input_container .user-id').each(function() {
                             remainingIds.push($(this).val());
                         });
-
-                        var user_expediteur = userID; // id de l'expéditeur
-                        var user_expediteur_nom = userNom; 
+                        var user_destinataire = remainingIds;
+                        var user_expediteur = <?=  $this->session->userdata('user')['id']; ?>; // ID de l'expéditeur
+                        var user_expediteur_nom = '<?= $this->session->userdata('user')['nom'] . ' ' . $this->session->userdata('user')['prenom']; ?>';
                         var selectedCheckboxes = $('input[id=role_msg]:checked');
                         var selectedValues = selectedCheckboxes.map(function() {
                             return $(this).val();
                         }).get();
+                        var roles = selectedValues;
+                        var message = $('#message_msg').val();
+                        var objet = $('#objet_msg').val();
+                        var date = $('#date_msg').val();
 
                         // Ajouter des données supplémentaires à formData
                         formData.append('userInfo', user_expediteur);
                         formData.append('expediteur_nom', user_expediteur_nom);
                         formData.append('role_msg', JSON.stringify(selectedValues)); // Convertir en JSON
                         formData.append('select_users_specifique', JSON.stringify(remainingIds)); // Convertir en JSON
-                        console.log(Array.from(formData.entries())); 
+                        formData.append('message_msg', message);
+                        formData.append('objet_msg', objet);
+                        formData.append('date_msg', date);
 
-                        $.ajax({
-                            url: '<?php echo site_url('message/insertMessage'); ?>',
-                            type: 'POST',
-                            data: formData,
-                            contentType: false, // Important pour l'envoi de FormData
-                            processData: false, // Important pour l'envoi de FormData
-                            success: function(response) {
-                                // Vider les inputs
-                                $('input[id=role_msg]:checked').prop('checked', false);
-                                $('#input_container').empty();
-                                $('#objet_msg').val('');
-                                $('#message_msg').val('');
-                                $('#date_msg').val('');
-                                $('#file_msg').val('');
+                        // Vérifier si un fichier est sélectionné
+                        var fileInput = $('#file_msg')[0];
+                        if (fileInput.files.length > 0) {
+                            var fileName = fileInput.files[0].name;
+                            formData.append('file_name', fileName); // Ajouter le nom du fichier
+                        }
 
-                                // Afficher le toast
-                                $('#toast').fadeIn().delay(3000).fadeOut();
-                                $('#toast').toast({ delay: 3000 });
-                                $('#toast').toast('show');
-                            },
-                            error: function(xhr, status, error) {
-                                console.log(error);
-                                console.error('Une erreur s\'est produite:', error);
-                            }
-                        });
+                        console.log(Array.from(formData.entries())); // Afficher les données pour le débogage
+                        if (!message.trim()) {
+                            //console.log("Le message ne peut pas être vide");  
+                            // Afficher le toast pour informer l'utilisateur
+                            $('#toast').addClass('toast-danger'); // Ajoute la classe de danger
+                            $('#toast').text('Le message ne peut pas être vide.'); // Message de toast 
+                            $('#toast').fadeIn().delay(3000).fadeOut();
+                            $('#toast').toast({ delay: 3000 }); // Initialiser avec un délai
+                            $('#toast').toast('show'); // Afficher le toast
+                        } else {
+                            $.ajax({
+                                url: '<?php echo site_url('message/insertMessage'); ?>',
+                                type: 'POST',
+                                data: formData,
+                                contentType: false, // Important pour l'envoi de FormData
+                                processData: false, // Important pour l'envoi de FormData
+                                success: function(response) {
+                                        // Vider les inputs
+                                    $('input[id=role_msg]:checked').prop('checked', false);
+                                    $('#input_container').empty();
+                                    $('#objet_msg').val('');
+                                    $('#message_msg').val('');
+                                    $('#date_msg').val('');
+                                    $('#file_msg').val('');
+
+                                    // Activer les champs des accordions
+                                    $('#user_search').prop('disabled', false);
+                                    $('#user_select').prop('disabled', false);
+                                    // Active les checkboxes si nécessaire
+                                    $('input[id=role_msg]').prop('disabled', false);
+
+                                    // Afficher le toast pour confirmation
+                                    $('#toast').addClass('toast-succes'); // Ajoute la classe de danger
+                                    $('#toast').text('Message envoyé avec succès.'); // Message de confirmation
+                                    $('#toast').fadeIn().delay(3000).fadeOut();
+                                    $('#toast').toast({ delay: 3000 }); // Initialiser avec un délai
+                                    $('#toast').toast('show'); // Afficher le toast
+                                },
+                                error: function(xhr, status, error) {
+                                    console.log(error);
+                                    console.error('Une erreur s\'est produite:', error);
+                                }
+                            });
+                        }
                     });
-                });*/
+                });
+            
                 /** Fin fonction ajax avec le fichier */
             
 
@@ -702,6 +729,10 @@ $(document).ready(function() {
 }
 .toast-danger {
     background-color: red; /* ou une autre couleur de ton choix */
+    color: white; /* pour le texte */
+}
+.toast-succes {
+    background-color: green; /* ou une autre couleur de ton choix */
     color: white; /* pour le texte */
 }
 </style>

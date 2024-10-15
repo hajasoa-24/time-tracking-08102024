@@ -27,9 +27,9 @@ class Message extends My_Controller{
         $this->load->view('common/footer', []);
     }
 
-/**Fonction controler pour la views envoye */
+/** Controler Fonction pour la views envoye */
 
-public function insertMessage()
+/*public function insertMessage()
 {
     $this->load->model('message_model');
     if ($this->input->server('REQUEST_METHOD') === 'POST') {
@@ -65,7 +65,7 @@ public function insertMessage()
             '7' => 'Direction',
             '8' => 'Costrat',
             '9' => 'Client',
-            '10' => 'Reporting'*/
+            '10' => 'Reporting'
             '1' => '1',
             '2' => '2',
             '3' => '3',
@@ -173,7 +173,7 @@ public function insertMessage()
         // Retourner la réponse
         echo json_encode($response);
     }
-}
+}*/
 
  /**fonction test pour upload files */
  public function upload_files() 
@@ -267,134 +267,177 @@ public function selectUserRole()
 }*/
 
 /**concroler test avec fichier */
-   /* public function insertMessage() {
-        $this->load->model('message_model');
-        if ($this->input->server('REQUEST_METHOD') === 'POST') {
-            // Récupération des données
-            $expediteur = $this->input->post('userInfo');
-            $expediteur_name = $this->input->post('expediteur_nom');
-            $role = json_decode($this->input->post('role_msg'), true); // Décoder les rôles depuis JSON
-            $user_destinataire = json_decode($this->input->post('select_users_specifique'), true); // Décoder les destinataires
-            $objet = $this->input->post('objet_msg');
-            $message = $this->input->post('message_msg');
-            $date = $this->input->post('date_msg');
-            $status = false;
+public function insertMessage() {
+    $this->load->model('message_model');
 
-            log_message('info', 'Données reçues: ' . json_encode($_POST));
+    if ($this->input->server('REQUEST_METHOD') === 'POST') {
+        // Récupération des données
+        $expediteur = $this->input->post('userInfo');
+        $expediteur_name = $this->input->post('expediteur_nom');
+        $role = json_decode($this->input->post('role_msg'), true); // Décoder les rôles depuis JSON
+        $user_destinataire = json_decode($this->input->post('select_users_specifique'), true); // Décoder les destinataires
+        $objet = $this->input->post('objet_msg'); // Récupération de l'objet
+        $message = $this->input->post('message_msg');
+        $date = $this->input->post('date_msg');
+        $status = false;
 
-            // Configuration de l'upload
-            $config['upload_path']   = './uploads/'; // Répertoire où le fichier sera enregistré
-            $config['allowed_types'] = 'gif|jpg|png|pdf|doc|docx|txt|sql|zip'; // Types de fichiers autorisés
-            $config['max_size']      = 2048; // Taille maximale du fichier en Ko
-            $this->load->library('upload', $config);
-    
-            // Vérifiez si un fichier a été téléchargé
-            $fichier = '';
-            if (isset($_FILES['fichiers']) && !empty($_FILES['fichiers']['name'][0])) {
-                // Gestion de l'upload de fichiers multiples
-                $files = $_FILES['fichiers'];
-                $file_count = count($files['name']);
-                for ($i = 0; $i < $file_count; $i++) {
-                    $_FILES['file']['name'] = $files['name'][$i];
-                    $_FILES['file']['type'] = $files['type'][$i];
-                    $_FILES['file']['tmp_name'] = $files['tmp_name'][$i];
-                    $_FILES['file']['error'] = $files['error'][$i];
-                    $_FILES['file']['size'] = $files['size'][$i];
-    
-                    if ($this->upload->do_upload('file')) {
-                        $upload_data = $this->upload->data(); // Récupère les informations du fichier
-                        $fichier .= $upload_data['file_name'] . ','; // Stocker les noms des fichiers
-                    } else {
-                        log_message('error', 'Erreur lors de l\'upload : ' . $this->upload->display_errors());
-                    }
-                }
-                $fichier = rtrim($fichier, ','); // Enlever la virgule finale
-            }
-    
-            $role_mapping = array(
-                '1' => '1',
-                '2' => '2',
-                '3' => '3',
-                '4' => '4',
-                '5' => '5',
-                '6' => '6',
-                '7' => '7',
-                '8' => '8',
-                '9' => '9',
-                '10' => '10'
-            );
-    
-            // Initialiser un tableau pour stocker les rôles associés
-            $roles_associés = array();
-            foreach ($role as $role_id) {
-                if (isset($role_mapping[$role_id])) {
-                    $roles_associés[] = $role_mapping[$role_id];
-                }
-            }
-    
-            if (!empty($message)) {
-                $response = array(
-                    'status' => 'error',
-                    'message' => 'Aucune donnée à insérer.'
-                );
-    
-                if (is_array($roles_associés) && !empty($roles_associés) && is_array($user_destinataire) && !empty($user_destinataire)) {
-                    $successfulInserts = 0;
-                    $failedInserts = 0;  
-                    foreach ($roles_associés as $role) {
-                        foreach ($user_destinataire as $value) {
-                            $data = array(
-                                'message_expediteur_id' => $expediteur,
-                                'message_expediteur_name' => $expediteur_name,
-                                'message_role_id' => $role,
-                                'message_objet' => $objet,
-                                'message_message' => $message,
-                                'message_fichier_name' => $fichier,
-                                'message_user' => $value,
-                                'message_date' => date('Y-m-d H:i:s'),
-                                'message_status' => $status
-                            );
-                            if ($this->message_model->insertMessage($data)) {
-                                $successfulInserts++;
-                            } else {
-                                $failedInserts++;
-                                log_message('error', 'Erreur lors de l\'insertion de: ' . json_encode($data));
-                            }
-                        }
-                    }
-    
-                    // Mise à jour de la réponse en fonction des insertions réussies
-                    if ($successfulInserts > 0) {
-                        $response = array(
-                            'status' => 'success',
-                            'message' => "$successfulInserts données insérées avec succès."
-                        );
-                    }
-                    if ($failedInserts > 0) {
-                        $response['status'] = 'partial_success';
-                        $response['message'] .= " $failedInserts insertion(s) échouée(s).";
-                    }
+        log_message('info', 'Données POST reçues: ' . json_encode($_POST));
+        log_message('info', 'Fichiers reçus: ' . json_encode($_FILES));
+
+        // Configuration de l'upload
+        $config['upload_path']   = './uploads/'; // Répertoire où le fichier sera enregistré
+        $config['allowed_types'] = 'gif|jpg|png|pdf|doc|docx|txt|sql|zip'; // Types de fichiers autorisés
+        $config['max_size']      = 2048; // Taille maximale du fichier en Ko
+        $this->load->library('upload', $config);
+
+        // Vérifiez si des fichiers ont été téléchargés
+        $fichier = '';
+        if (isset($_FILES['fichiers']) && !empty($_FILES['fichiers']['name'][0])) {
+            // Gestion de l'upload de fichiers multiples
+            $files = $_FILES['fichiers'];
+            $file_count = count($files['name']);
+            for ($i = 0; $i < $file_count; $i++) {
+                $_FILES['file']['name'] = $files['name'][$i];
+                $_FILES['file']['type'] = $files['type'][$i];
+                $_FILES['file']['tmp_name'] = $files['tmp_name'][$i];
+                $_FILES['file']['error'] = $files['error'][$i];
+                $_FILES['file']['size'] = $files['size'][$i];
+
+                $this->upload->initialize($config);
+
+                if ($this->upload->do_upload('file')) {
+                    $upload_data = $this->upload->data(); // Récupère les informations du fichier
+                    $fichier .= $upload_data['file_name'] . ','; // Stocker les noms des fichiers
+                    $file_path = $upload_data['full_path'];
                 } else {
-                    // Gestion des cas où les rôles ou destinataires sont vides
-                    // Ajoutez votre logique ici si nécessaire
+                    log_message('error', 'Erreur lors de l\'upload : ' . $this->upload->display_errors());
                 }
-    
-                // Retourner la réponse
-                echo json_encode($response);
-            } else {
-                $response = array(
-                    'status' => 'error',
-                    'message' => 'Le message ne peut pas être vide!'
-                );
-                echo json_encode($response);
+            }
+            $fichier = rtrim($fichier, ','); // Enlever la virgule finale
+        }
+        $role_mapping = array(
+            '1' => '1',
+            '2' => '2',
+            '3' => '3',
+            '4' => '4',
+            '5' => '5',
+            '6' => '6',
+            '7' => '7',
+            '8' => '8',
+            '9' => '9',
+            '10' => '10'
+        );
+
+        // Initialiser un tableau pour stocker les rôles associés
+        $roles_associés = array();
+        if (!empty($role)) {
+            foreach ($role as $role_id) {
+                $roles_associés[] = $role_id; // Gardez les IDs des rôles
             }
         }
-    }*/
+
+        if (!empty($message)) {
+            $response = array(
+                'status' => 'error',
+                'message' => 'Aucune donnée à insérer.'
+            );
+            if (is_array($roles_associés) && !empty($roles_associés) && is_array($user_destinataire) && !empty($user_destinataire)) {
+                $successfulInserts = 0;
+                $failedInserts = 0;  
+                foreach ($roles_associés as $role) {
+                    foreach ($user_destinataire as $value) {
+                        $data = array(
+                            'message_expediteur_id' => $expediteur,
+                            'message_expediteur_name' => $expediteur_name,
+                            'message_role_id' => $role,
+                            'message_objet' => $objet,
+                            'message_message' => $message,
+                            'message_fichier_name' => $fichier,
+                            'message_fichier_path' => $file_path,
+                            'message_user' => $value,
+                            'message_date' => date('Y-m-d H:i:s'),
+                            'message_status' => $status
+                        );
+                        // Insérer dans la base de données
+                        if ($this->message_model->insertMessage($data)) {
+                            $successfulInserts++;
+                        } else {
+                            // Gestion des erreurs d'insertion
+                            $failedInserts++;
+                            log_message('error', 'Erreur lors de l\'insertion de: ' . json_encode($data)); // Log d'erreur
+                        }
+                    }
+                }
+                // Mise à jour de la réponse en fonction des insertions réussies
+                if ($successfulInserts > 0) {
+                    $response = array(
+                        'status' => 'success',
+                        'message' => "$successfulInserts données insérées avec succès."
+                    );
+                }   
+                if ($failedInserts > 0) {
+                    $response['status'] = 'partial_success';
+                    $response['message'] .= " $failedInserts insertion(s) échouée(s).";
+                }
+            } elseif (is_array($roles_associés) && empty($roles_associés)) {
+                foreach ($user_destinataire as $value) {
+                    $data = array(
+                        'message_expediteur_id' => $expediteur,
+                        'message_expediteur_name' => $expediteur_name,
+                        'message_role_id' => '',
+                        'message_objet' => $objet,
+                        'message_message' => $message,
+                        'message_fichier_name' => $fichier,
+                        'message_fichier_path' => $file_path,
+                        'message_user' => $value,
+                        'message_date' => date('Y-m-d H:i:s'),
+                        'message_status' => $status
+                    );   
+                    // Insérez chaque message avec le rôle correspondant
+                    $this->message_model->insertMessage($data);
+                }
+            } elseif (empty($user_destinataire)) {
+                foreach ($roles_associés as $role) {
+                    $data = array(
+                        'message_expediteur_id' => $expediteur,
+                        'message_expediteur_name' => $expediteur_name,
+                        'message_role_id' => $role,
+                        'message_objet' => $objet,
+                        'message_message' => $message,
+                        'message_fichier_name' => $fichier,
+                        'message_fichier_path' => $file_path,
+                        'message_user' => '',
+                        'message_date' => date('Y-m-d H:i:s'),
+                        'message_status' => $status
+                    );
+                    $this->message_model->insertMessage($data);
+                }
+            }  
+            $response = array(
+                'status' => 'success',
+                'message' => 'Roles associated successfully',
+                'data' => $roles_associés
+            );
+        } else {
+            $response = array(
+                'status' => 'error',
+                'message' => 'Le message ne peut pas être vide!',
+            );
+        }   
+        // Retourner la réponse
+        echo json_encode($response);
+
+        // Retourner la réponse
+        echo json_encode($response);
+    }
+}
+
+
     /**Fin concroler test avec fichier */
 
 /**Fin fonction controler pour la views envoye */
   
-/**Fonction controler pour la views recue */
+/** Controler Fonction  pour la views recue */
 public function find_message()
 {
     $this->load->model('message_model');
@@ -495,10 +538,10 @@ public function verifierStatutMessageUserId()
     
         echo json_encode($response);   
     }*/
-/**Fin fonction controler pour la views recue */
+/**Fin controler fonction  pour la views recue */
 
 
-/**Fonction controler pour la views list_msg */
+/**Controler Fonction  pour la views list_msg */
 public function select_message_user()
 {
     $this->load->model('message_model');      
@@ -561,7 +604,7 @@ public function suppression()
     echo json_encode($response); // Retourner la réponse en JSON
 }*/    
 
-/**Fin fonction controler pour la views list_msg */
+/**Fin controler fonction  pour la views list_msg */
 
     //fontion pour detecter les nouveaux messages
 public function check_new_messages() 
