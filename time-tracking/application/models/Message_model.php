@@ -7,6 +7,7 @@ class Message_model extends CI_Model{
     private $_tableUser = "tr_user";
     private $_tabletest = "test";
     private $_role = "tr_role";
+    private $_campagne = "tr_campagne";
     private $_tUser = "tr_user";
 
     public function __construct() 
@@ -27,10 +28,6 @@ public function insertMessage($data)
     }
 }
 
-/*public function insert_User($data) 
-{
-    return $this->db->insert($this->_role, $data); 
-}/*
 /**Fin du model pour l'insertion du message */
    
 
@@ -45,11 +42,6 @@ public function select_message2($msg_user)
 
 public function select_message($userId,$usrRole)
 {
-        //Selectionne message par usr_id
-    /*$this->db->select("message_id,message_expediteur_id,message_expediteur_name, message_objet, message_message, message_date,message_status,message_lus");
-    $this->db->order_by('message_id', 'DESC');
-    $this->db->group_by('message_expediteur_id');
-    $this->db->where('message_user', $userId);*/
     $this->db->select("m.message_id, m.message_expediteur_id, m.message_expediteur_name, m.message_objet, m.message_message, m.message_date, m.message_status, m.message_lus");
     $this->db->from("{$this->_table} m");
 
@@ -61,16 +53,12 @@ public function select_message($userId,$usrRole)
                      "m.message_expediteur_id = last_messages.message_expediteur_id 
                       AND m.message_date = last_messages.last_message_date");
     $this->db->where('m.message_user', $userId);
-    $this->db->order_by('m.message_date', ' DESC');
     $this->db->group_by('m.message_expediteur_id'); 
+    $this->db->group_by('m.message_id'); 
+    $this->db->order_by('m.message_date', ' DESC');
     $msg_query = $this->db->get($this->_table);
     $messages_id = $msg_query->result();
 
-        //Selectionne message par role
-    /*$this->db->select("message_id,message_expediteur_id, message_expediteur_name, message_objet, message_message, message_date, message_status,message_lus");
-    $this->db->group_by('message_expediteur_id');
-    $this->db->where('message_role_id', $usrRole);
-    $this->db->order_by('message_date', 'DESC');*/
     $this->db->select("m.message_id, m.message_expediteur_id, m.message_expediteur_name, m.message_objet, m.message_message, m.message_date, m.message_status, m.message_lus");
     $this->db->from("{$this->_table} m");
     
@@ -89,13 +77,6 @@ public function select_message($userId,$usrRole)
     
     $role_query = $this->db->get($this->_table);
     $messages_role = $role_query->result();
-
-    /*$this->db->select("message_expediteur_id,message_expediteur_name, message_objet, message_message, message_date,message_status");
-    $this->db->where('message_role_id', $usrRole);
-    $this->db->group_by('message_expediteur_id');
-    $this->db->order_by('message_date', 'DESC');
-    $nb_query = $this->db->get($this->_table);
-    $nb_messages = $nb_query->result();*/
 
         // Retourner les deux résultats
     return [
@@ -156,15 +137,32 @@ public function verification_message_status($message_id ,$dest_id, $dest_role, $
     ];
 }
 
-public function verification_message_status_userId($message_id, $dest_id, $dest_role, $exped_id, $date_msg) 
+public function getMessageUserAndUpdateMessage_lus($message_id, $dest_id, $dest_role, $exped_id, $date_msg, $campagne_id) 
 {
     // Sélection des messages spécifiques
-    $this->db->select("message_expediteur_id, message_expediteur_name, message_objet, message_message, message_date, message_status, message_lus,message_fichier_path");
-    $this->db->where('message_user', $dest_id);
-    $this->db->where('message_expediteur_id', $exped_id);
+    $this->db->select("message_expediteur_id, message_expediteur_name, message_objet, message_message, message_date, message_status, message_lus, message_fichier_path");
+    $this->db->select("u.usr_nom, u.usr_prenom");
+    $this->db->select("r.role_libelle");
+    $this->db->select("c.campagne_libelle");
+    $this->db->from($this->_table);
+    $this->db->join($this->_tUser . ' u', 'u.usr_id = ' . $this->_table . '.message_user', 'left');
+    $this->db->join($this->_role . ' r', 'r.role_id = ' . $this->_table . '.message_role_id', 'left');
+    $this->db->join($this->_campagne . ' c', 'c.campagne_id = ' . $this->_table . '.message_campagne', 'left');
+
+    if (!empty($campagne_id)) {
+        $this->db->where('message_campagne', $campagne_id);
+        $this->db->where('message_expediteur_id', $exped_id);
+    } elseif (!empty($dest_role)) {
+        $this->db->where('message_role_id', $dest_role);
+        $this->db->where('message_expediteur_id', $exped_id);
+    } else {
+        $this->db->where('message_user', $dest_id);       
+        $this->db->where('message_expediteur_id', $exped_id);
+    }
+
     $this->db->order_by('message_date', 'DESC');
 
-    $query = $this->db->get($this->_table);
+    $query = $this->db->get();
     $messages_specifique = $query->result();
 
     // Mettre à jour message_lus pour les messages spécifiques
@@ -181,15 +179,29 @@ public function verification_message_status_userId($message_id, $dest_id, $dest_
         $updated_lus_ids = implode(',', $current_lus_ids);
         
         // Mettre à jour la colonne message_lus
-        $this->db->where('message_expediteur_id', $exped_id); 
-        $this->db->where('message_id', $message_id);
-        $this->db->where('message_date', $message->message_date); 
-        $this->db->update($this->_table, ['message_lus' => $updated_lus_ids]);
+       
+        if(!empty($campagne_id) ){
+            $this->db->where('message_campagne', $campagne_id);
+            $this->db->where('message_expediteur_id', $exped_id); 
+            $this->db->update($this->_table, ['message_lus' => $updated_lus_ids]);
+        } elseif(!empty($dest_role)){
+            $this->db->where('message_role_id', $dest_role);
+            $this->db->where('message_expediteur_id', $exped_id); 
+            $this->db->update($this->_table, ['message_lus' => $updated_lus_ids]);
+        }else{
+            $this->db->where('message_user', $dest_id);
+            $this->db->where('message_expediteur_id', $exped_id); 
+            $this->db->update($this->_table, ['message_lus' => $updated_lus_ids]);
+        }
+        //$this->db->where('message_id', $message_id);
+        //$this->db->where('message_date', $message->message_date); 
+      
     }
 
     // Retourner les messages spécifiques
     return $messages_specifique; // Pas besoin d'appeler result() ici
 }
+
 
 public function select_role_libelle($roleUser)
 {
@@ -203,17 +215,19 @@ public function select_role_libelle($roleUser)
 
 
 /**Debut model pour le listse_msg */
-function select_msg_user($usr_id) 
+function getMessageSendUser($usr_id) 
 {
     // Sélectionner les colonnes des messages
     $this->db->select('message_id,	message_expediteur_id, message_role_id, message_message, message_objet, message_user, message_date');
     
     // Sélectionner les colonnes de la table tr_user
     $this->db->select('usr_nom, usr_prenom');
+    $this->db->select("campagne_libelle");
     
     // Joindre la table tr_user
-    $this->db->from($this->_table); // Spécifiez la table de base pour la requête
-    $this->db->join($this->_tUser, 'tr_user.usr_id = '.$this->_table.'.message_user', 'left'); // Remplacez 'message_expediteur_id' par la clé correspondante
+    $this->db->from($this->_table); 
+    $this->db->join($this->_tUser, 'tr_user.usr_id = '.$this->_table.'.message_user', 'left');
+    $this->db->join($this->_campagne , 'tr_campagne.campagne_id = ' . $this->_table . '.message_campagne', 'left'); 
 
     // Conditions de filtrage
     $this->db->where('message_expediteur_id', $usr_id);
@@ -228,95 +242,7 @@ function select_msg_user($usr_id)
     return $query->result();
 }
 
-public function select_allmsg_send($message_destinatair, $expediteur_id, $message_id, $message_role)
-{
-    // Sélectionner les messages et les détails des utilisateurs
-    $this->db->select('
-        m.message_id,
-        m.message_expediteur_id,
-        m.message_role_id,
-        m.message_message,
-        m.message_objet,
-        m.message_user,
-        m.message_date,
-        m.message_fichier_path,
-        u.usr_nom,
-        u.usr_prenom
-    ');
 
-    // Joindre la table tr_user pour récupérer les noms et prénoms
-    $this->db->from($this->_table . ' AS m');
-    $this->db->join($this->_tUser . ' AS u', 'u.usr_id = m.message_user', 'left');
-
-    // Conditions de filtrage
-    $this->db->where('m.message_user', $message_destinatair);
-    $this->db->where('m.message_expediteur_id', $expediteur_id);
-    $this->db->where('m.message_id', $message_id);
-    
-    // Tri des résultats
-    $this->db->order_by('m.message_date', 'DESC');
-
-    // Exécution de la requête
-    $query = $this->db->get();
-    $list_msg = $query->result();
-
-    // Récupérer le message et les utilisateurs qui ont lu le message
-    $this->db->select("message_id, message_lus");
-    $this->db->from($this->_table);
-    $this->db->where("message_id", $message_id);
-    
-    // Exécution de la requête pour obtenir les lecteurs
-    $read_query = $this->db->get();
-    $read_users = $read_query->result_array();
-
-    // Extraire les IDs lus
-    $read_user_ids = [];
-    if (!empty($read_users)) {
-        $read_user_ids = explode(',', $read_users[0]['message_lus']);
-        $read_user_ids = array_map('trim', $read_user_ids); // Nettoyer les espaces
-    }
-
-    // Récupérer les détails des utilisateurs qui ont lu le message
-    $user_details = [];
-    if (!empty($read_user_ids)) {
-        $this->db->select("usr_id, usr_nom, usr_prenom, usr_matricule");
-        $this->db->from($this->_tUser);
-        $this->db->where_in("usr_id", $read_user_ids);
-        $user_query = $this->db->get();
-        $user_details['read'] = $user_query->result_array();
-    } else {
-        $user_details['read'] = []; // Aucune ID à rechercher
-    }
-
-    // Récupérer tous les utilisateurs selon le rôle
-    $this->db->select("usr_id, usr_nom, usr_prenom, usr_matricule");
-    $this->db->where("usr_role", $message_role);
-    $this->db->from($this->_tUser);
-    $all_users_query = $this->db->get();
-    $all_users = $all_users_query->result_array();
-
-    // Extraire les IDs des utilisateurs
-    $all_user_ids = array_column($all_users, 'usr_id');
-
-    // Filtrer les utilisateurs qui n'ont pas lu le message
-    $unread_user_ids = array_diff($all_user_ids, $read_user_ids);
-
-    // Récupérer les détails des utilisateurs qui n'ont pas lu le message
-    $unread_user_details = [];
-    if (!empty($unread_user_ids)) {
-        $this->db->select("usr_id, usr_nom, usr_prenom, usr_matricule");
-        $this->db->from($this->_tUser);
-        $this->db->where_in("usr_id", $unread_user_ids);
-        $unread_query = $this->db->get();
-        $unread_user_details = $unread_query->result_array();
-    }
-
-    return [
-        'list_msg' => $list_msg,
-        'read_users' => $user_details['read'], // Liste des utilisateurs qui ont lu le message
-        'unread_users' => $unread_user_details, // Détails des utilisateurs qui n'ont pas lu le message
-    ];
-}
 
 public function deleteMessage($message_id)
 {
@@ -371,8 +297,6 @@ public function deleteMessage($message_id)
         return null; // Ou gérer le cas où aucun fichier n'est trouvé
     }
 
-
-
     public function updateMessage($message_id, $objet, $message) 
     {
         // Spécifier la condition de mise à jour
@@ -384,10 +308,8 @@ public function deleteMessage($message_id)
             return false; // Retourne faux en cas d'échec
         }
     }
-    
- 
 
-    public function findUser()
+    public function getAllUser()
     {
         $this->db->select("usr_id, usr_nom , usr_prenom , usr_matricule, usr_initiale, usr_role");
         $query = $this->db->get($this->_tableUser); 
@@ -399,54 +321,309 @@ public function deleteMessage($message_id)
         return $this->db->insert($this->_tabletest, $data);
     }
 
-   
 
-    /*public function select_message_user($userId, $usrRole) {
+    public function select_messages_with_count($dest_id,$dest_role,$exped_id,$date_msg) 
+    {
+        // Récupérer tous les messages d'un utilisateur
+        $this->db->select("message_expediteur_id,message_expediteur_name, message_objet, message_message,message_date");
+        $this->db->where('message_user', $dest_id);
+        $this->db->or_where('message_role_id', $dest_role);
+        $this->db->where('message_expediteur_id', $exped_id);  
+        $this->db->where('message_status', 0);
+        $this->db->update($this->_table, ['message_status' => 1]);
+
+            // Récupérer les messages mis à jour
+        $this->db->select("message_expediteur_id,message_expediteur_name, message_objet, message_message, message_date");
+        $this->db->where('message_user', $dest_id);
+        $this->db->where('message_date', $date_msg);
+        $this->db->or_where('message_role_id', $dest_role);
+        $this->db->where('message_status', 1); // Récupérer les messages avec status mis à jour
+        $this->db->where('message_expediteur_id', $exped_id);
+        $this->db->order_by('message_date', 'DESC');
+
+        $query = $this->db->get($this->_table);
+        return $query->result();
+        
+    }
+ 
+       
+    public function message_envoye($user)
+    {
+            // Récupérer les messages lus
+        $this->db->select("message_expediteur_id,message_expediteur_name, message_objet, message_user, message_role_id, message_message, message_date");
+        $this->db->where('message_expediteur_id', $user);
+        $this->db->where('message_status', 1); // Messages lus
+        $lu_query = $this->db->get($this->_table);
+        $messages_lu = $lu_query->result();
+
+            // Récupérer les messages non lus
+        $this->db->select("message_expediteur_id,message_expediteur_name, message_objet, message_user, message_role_id, message_message, message_date");
+        $this->db->where('message_expediteur_id', $user);
+        $this->db->where('message_status', 0); // Messages lus
+        $non_lu_query = $this->db->get($this->_table);
+        $messages_non_lu = $non_lu_query->result();
+
+        return [
+            'messages_lu' => $messages_lu,
+            'messages_non_lu' => $messages_non_lu,
+        ];
+        
+    }
+
+    public function get_read_unread_users($messageId,$userId) 
+    {
+        // Récupérer les utilisateurs qui ont lu le message
+        $this->db->select("message_lus");
+        $this->db->from($this->_table);
+        $this->db->where("message_id", $messageId);
+        
+        // On suppose que message_lus est une colonne avec des IDs séparés par des virgules
+        $this->db->like("message_lus", $userId);
+        $read_query = $this->db->get();
+        $read_users = $read_query->result_array();
+    
+        // Récupérer tous les utilisateurs
+        $this->db->select("usr_id");
+        $this->db->from($this->$_tUser); // Table des utilisateurs
+        $all_users_query = $this->db->get();
+        $all_users = $all_users_query->result_array();
+    
+        // Filtrer les utilisateurs qui n'ont pas lu le message
+        $unread_users = array_diff(array_column($all_users, 'usr_id'), array_column($read_users, 'usr_id'));
+    
+        return [
+            'read_users' => $read_users,
+            'unread_users' => $unread_users,
+        ];
+    }
+
+    public function select_nb_msg($userNom)
+    {
+        $this->db->select('COUNT(message_message) as count');
+        $this->db->where('message_expediteur_id',$userNom);
+        $this->db->where('message_status', 0);    
+        $query = $this->db->get($this->_table);
+        return $query->result();
+    }
+
+    public function select_user($user)
+    {
+        $this->db->select('usr_id,usr_nom,usr_prenom,usr_role');
+        $this->db->where('usr_username',$user);   
+        $query = $this->db->get($this->_tUser);
+        return $query->result();
+    }
+
+    public function Number_msg()
+    {
+        $this->db->select('COUNT(message_message) as count');    
+        $query = $this->db->get($this->_table);
+        return $query->result();
+    }
+
+    public function find_Exped($exped)
+    {
+        $this->db->select("message_message");
+        $this->db->where('message_expediteur_id', $exped);   
+        $query = $this->db->get($this->_table);
+        return $query->result();
+    }
+
+    public function select_expediteur($username_msg)
+    {
+        $this->db->select('usr_id,usr_nom,usr_prenom');
+        $this->db->where('usr_username',$username_msg);
+        $query = $this->db->get($this->_tUser);
+        return $query->result();
+    }
+
+    public function select_all_expediteur()
+    {
+        $this->db->select('message_expediteur_id');
+        $query = $this->db->get($this->_table);
+        return $query->result();
+    }
+    
+    public function get_new_messages_count($user_id) {
+        $this->db->where('message_id', $user_id);
+        $this->db->where('is_read', 0); // Par exemple, pour les messages non lus
+        return $this->db->count_all_results('messages');
+    }
+
+    public function getMessageUser($userId, $usrRole, $CampagneUser) {
         // Sélectionne les messages spécifiques à l'utilisateur
-        $this->db->select("m.message_id, m.message_expediteur_id, m.message_expediteur_name, m.message_objet, m.message_message, m.message_date, m.message_status, m.message_lus, 'user' AS source");
+        $this->db->select("m.message_id, m.message_expediteur_id,m.message_user, m.message_expediteur_name, m.message_objet, m.message_message, m.message_date, m.message_status, m.message_lus");
         $this->db->from("{$this->_table} m");
+        
+        // Sous-requête pour obtenir le dernier message par expéditeur pour l'utilisateur
         $this->db->join("(SELECT message_expediteur_id, MAX(message_date) AS last_message_date 
                           FROM {$this->_table} 
                           WHERE message_user = $userId 
                           GROUP BY message_expediteur_id) AS last_messages", 
                          "m.message_expediteur_id = last_messages.message_expediteur_id 
-                          AND m.message_date = last_messages.last_message_date", 
-                         'left'); // Utiliser 'left' pour éviter de perdre des résultats
+                          AND m.message_date = last_messages.last_message_date");
     
         $this->db->where('m.message_user', $userId);
-        $this->db->group_by('m.message_expediteur_id');
-        $this->db->order_by('m.message_date', 'ESC');
-    
+        $this->db->group_by('m.message_expediteur_id'); 
+        $this->db->order_by('m.message_date', 'DESC');
+        
         // Exécute la première requête et obtient les résultats
         $query_user = $this->db->get();
         $messages_user = $query_user->result();
-    
+        
         // Récupère les messages par rôle
-        $this->db->select("m.message_id, m.message_expediteur_id, m.message_expediteur_name, m.message_objet, m.message_message, m.message_date, m.message_status, m.message_lus, 'role' AS source");
+        $this->db->select("m.message_id, m.message_expediteur_id,m.message_user, m.message_expediteur_name, m.message_objet, m.message_message, m.message_date, m.message_role_id, m.message_status, m.message_lus");
         $this->db->from("{$this->_table} m");
+        
+        // Sous-requête pour obtenir le dernier message par expéditeur pour le rôle donné
         $this->db->join("(SELECT message_expediteur_id, MAX(message_date) AS last_message_date 
                           FROM {$this->_table} 
                           WHERE message_role_id = $usrRole 
                           GROUP BY message_expediteur_id) AS last_messages", 
                          "m.message_expediteur_id = last_messages.message_expediteur_id 
-                          AND m.message_date = last_messages.last_message_date", 
-                         'left'); // Utiliser 'left' pour éviter de perdre des résultats
-    
+                          AND m.message_date = last_messages.last_message_date");
+        
+        // Filtrer par rôle
         $this->db->where('m.message_role_id', $usrRole);
         $this->db->group_by('m.message_expediteur_id');
-        $this->db->order_by('m.message_date', 'ESC');
-    
+        $this->db->order_by('m.message_date', 'DESC');
+        
         // Exécute la deuxième requête et obtient les résultats
         $query_role = $this->db->get();
         $messages_role = $query_role->result();
-    
+
+           // Récupère les messages par campagne
+           $this->db->select("m.message_id, m.message_expediteur_id,m.message_user, m.message_expediteur_name, m.message_objet, m.message_message, m.message_date, m.message_campagne, m.message_status, m.message_lus");
+           $this->db->from("{$this->_table} m");
+           
+           // Sous-requête pour obtenir le dernier message par expéditeur pour le rôle donné
+           $this->db->join("(SELECT message_expediteur_id, MAX(message_date) AS last_message_date 
+                             FROM {$this->_table} 
+                             WHERE message_campagne = $CampagneUser 
+                             GROUP BY message_expediteur_id) AS last_messages", 
+                            "m.message_expediteur_id = last_messages.message_expediteur_id 
+                             AND m.message_date = last_messages.last_message_date");
+           
+           // Filtrer par rôle
+           $this->db->where('m.message_campagne', $CampagneUser);
+           $this->db->group_by('m.message_expediteur_id');
+           $this->db->order_by('m.message_date', 'DESC');
+           
+           // Exécute la deuxième requête et obtient les résultats
+           $messages_campagne = $this->db->get();
+           $messages_campagne = $messages_campagne->result();
+        
         // Combiner les deux résultats
-        $messages = array_merge($messages_user, $messages_role);
+        $messages = array_merge($messages_user, $messages_role, $messages_campagne);
+        
+        // Optionnel : trier tous les messages par date
+        usort($messages, function($a, $b) {
+            return strtotime($b->message_date) - strtotime($a->message_date);
+        });
     
         // Retourner les résultats combinés
+        log_message('info', $this->db->last_query()); // Log de la dernière requête
         return $messages;
-        log_message('info', $this->db->last_query());
     }
+
+    public function getAllMessageSend($message_destinatair, $expediteur_id, $message_id, $message_role)
+    {
+        // Sélectionner les messages et les détails des utilisateurs
+        $this->db->select('
+            m.message_id,
+            m.message_expediteur_id,
+            m.message_role_id,
+            m.message_message,
+            m.message_objet,
+            m.message_user,
+            m.message_date,
+            m.message_fichier_path,
+            u.usr_nom,
+            u.usr_prenom,
+            c.campagne_libelle
+        ');
+
+        // Joindre la table tr_user pour récupérer les noms et prénoms
+        $this->db->from($this->_table . ' AS m');
+        $this->db->join($this->_tUser . ' AS u', 'u.usr_id = m.message_user', 'left');
+        $this->db->join($this->_campagne . ' AS c', 'c.campagne_id = m.message_campagne', 'left');
+
+        // Conditions de filtrage
+        $this->db->where('m.message_user', $message_destinatair);
+        $this->db->where('m.message_expediteur_id', $expediteur_id);
+        $this->db->where('m.message_id', $message_id);
+        
+        // Tri des résultats
+        $this->db->order_by('m.message_date', 'DESC');
+
+        // Exécution de la requête
+        $query = $this->db->get();
+        $list_msg = $query->result();
+
+        // Récupérer le message et les utilisateurs qui ont lu le message
+        $this->db->select("message_id, message_lus");
+        $this->db->from($this->_table);
+        $this->db->where("message_id", $message_id);
+        
+        // Exécution de la requête pour obtenir les lecteurs
+        $read_query = $this->db->get();
+        $read_users = $read_query->result_array();
+
+        // Extraire les IDs lus
+        $read_user_ids = [];
+        if (!empty($read_users)) {
+            $read_user_ids = explode(',', $read_users[0]['message_lus']);
+            $read_user_ids = array_map('trim', $read_user_ids); // Nettoyer les espaces
+        }
+
+        // Récupérer les détails des utilisateurs qui ont lu le message
+        $user_details = [];
+        if (!empty($read_user_ids)) {
+            $this->db->select("usr_id, usr_nom, usr_prenom, usr_matricule");
+            $this->db->from($this->_tUser);
+            $this->db->where_in("usr_id", $read_user_ids);
+            $user_query = $this->db->get();
+            $user_details['read'] = $user_query->result_array();
+        } else {
+            $user_details['read'] = []; // Aucune ID à rechercher
+        }
+
+        // Récupérer tous les utilisateurs selon le rôle
+        $this->db->select("usr_id, usr_nom, usr_prenom, usr_matricule");
+        $this->db->where("usr_role", $message_role);
+        $this->db->from($this->_tUser);
+        $all_users_query = $this->db->get();
+        $all_users = $all_users_query->result_array();
+
+        // Extraire les IDs des utilisateurs
+        $all_user_ids = array_column($all_users, 'usr_id');
+
+        // Filtrer les utilisateurs qui n'ont pas lu le message
+        $unread_user_ids = array_diff($all_user_ids, $read_user_ids);
+
+        // Récupérer les détails des utilisateurs qui n'ont pas lu le message
+        $unread_user_details = [];
+        if (!empty($unread_user_ids)) {
+            $this->db->select("usr_id, usr_nom, usr_prenom, usr_matricule");
+            $this->db->from($this->_tUser);
+            $this->db->where_in("usr_id", $unread_user_ids);
+            $unread_query = $this->db->get();
+            $unread_user_details = $unread_query->result_array();
+        }
+
+        return [
+            'list_msg' => $list_msg,
+            'read_users' => $user_details['read'], // Liste des utilisateurs qui ont lu le message
+            'unread_users' => $unread_user_details, // Détails des utilisateurs qui n'ont pas lu le message
+        ];
+    }
+    
+}
+
+
+
+
+   
     
     
     
@@ -526,62 +703,7 @@ public function deleteMessage($message_id)
         return []; // Retourne un tableau vide si aucun ID trouvé
     }
 
-    
-
-/** --------------------------------------------- */
-
-
-    public function select_messages_with_count($dest_id,$dest_role,$exped_id,$date_msg) 
-    {
-        // Récupérer tous les messages d'un utilisateur
-        $this->db->select("message_expediteur_id,message_expediteur_name, message_objet, message_message,message_date");
-        $this->db->where('message_user', $dest_id);
-        $this->db->or_where('message_role_id', $dest_role);
-        $this->db->where('message_expediteur_id', $exped_id);  
-        $this->db->where('message_status', 0);
-        $this->db->update($this->_table, ['message_status' => 1]);
-
-            // Récupérer les messages mis à jour
-        $this->db->select("message_expediteur_id,message_expediteur_name, message_objet, message_message, message_date");
-        $this->db->where('message_user', $dest_id);
-        $this->db->where('message_date', $date_msg);
-        $this->db->or_where('message_role_id', $dest_role);
-        $this->db->where('message_status', 1); // Récupérer les messages avec status mis à jour
-        $this->db->where('message_expediteur_id', $exped_id);
-        $this->db->order_by('message_date', 'DESC');
-
-        $query = $this->db->get($this->_table);
-        return $query->result();
-        
-    }
- 
-       
-    public function message_envoye($user)
-    {
-            // Récupérer les messages lus
-        $this->db->select("message_expediteur_id,message_expediteur_name, message_objet, message_user, message_role_id, message_message, message_date");
-        $this->db->where('message_expediteur_id', $user);
-        $this->db->where('message_status', 1); // Messages lus
-        $lu_query = $this->db->get($this->_table);
-        $messages_lu = $lu_query->result();
-
-            // Récupérer les messages non lus
-        $this->db->select("message_expediteur_id,message_expediteur_name, message_objet, message_user, message_role_id, message_message, message_date");
-        $this->db->where('message_expediteur_id', $user);
-        $this->db->where('message_status', 0); // Messages lus
-        $non_lu_query = $this->db->get($this->_table);
-        $messages_non_lu = $non_lu_query->result();
-
-        return [
-            'messages_lu' => $messages_lu,
-            'messages_non_lu' => $messages_non_lu,
-        ];
-        
-    }
-
-   
-    
-    /*public function select_allmsg_send($message_destinatair,$expediteur_id,$message_id,$message_role) {
+      /*public function select_allmsg_send($message_destinatair,$expediteur_id,$message_id,$message_role) {
         $this->db->select('message_id,	message_expediteur_id, message_role_id, message_message, message_objet, message_user, message_date');
         
         // Sélectionner les colonnes de la table tr_user
@@ -637,92 +759,8 @@ public function deleteMessage($message_id)
             'read_users' => $read_users,
             'unread_users' => $unread_users,
         ];
-    }*/
-   
-
-    public function get_read_unread_users($messageId,$userId) 
-    {
-        // Récupérer les utilisateurs qui ont lu le message
-        $this->db->select("message_lus");
-        $this->db->from($this->_table);
-        $this->db->where("message_id", $messageId);
-        
-        // On suppose que message_lus est une colonne avec des IDs séparés par des virgules
-        $this->db->like("message_lus", $userId);
-        $read_query = $this->db->get();
-        $read_users = $read_query->result_array();
-    
-        // Récupérer tous les utilisateurs
-        $this->db->select("usr_id");
-        $this->db->from($this->$_tUser); // Table des utilisateurs
-        $all_users_query = $this->db->get();
-        $all_users = $all_users_query->result_array();
-    
-        // Filtrer les utilisateurs qui n'ont pas lu le message
-        $unread_users = array_diff(array_column($all_users, 'usr_id'), array_column($read_users, 'usr_id'));
-    
-        return [
-            'read_users' => $read_users,
-            'unread_users' => $unread_users,
-        ];
-    }
-
-    public function select_nb_msg($userNom)
-    {
-        $this->db->select('COUNT(message_message) as count');
-        $this->db->where('message_expediteur_id',$userNom);
-        $this->db->where('message_status', 0);    
-        $query = $this->db->get($this->_table);
-        return $query->result();
-    }
+    }*/  
 
 
 
-    public function select_user($user)
-    {
-        $this->db->select('usr_id,usr_nom,usr_prenom,usr_role');
-        $this->db->where('usr_username',$user);   
-        $query = $this->db->get($this->_tUser);
-        return $query->result();
-    }
-
-    public function Number_msg()
-    {
-        $this->db->select('COUNT(message_message) as count');    
-        $query = $this->db->get($this->_table);
-        return $query->result();
-    }
-
-    public function find_Exped($exped)
-    {
-        $this->db->select("message_message");
-        $this->db->where('message_expediteur_id', $exped);   
-        $query = $this->db->get($this->_table);
-        return $query->result();
-    }
-
-    public function select_expediteur($username_msg)
-    {
-        $this->db->select('usr_id,usr_nom,usr_prenom');
-        $this->db->where('usr_username',$username_msg);
-        $query = $this->db->get($this->_tUser);
-        return $query->result();
-    }
-
-    public function select_all_expediteur()
-    {
-        $this->db->select('message_expediteur_id');
-        $query = $this->db->get($this->_table);
-        return $query->result();
-    }
-    
-    public function get_new_messages_count($user_id) {
-        $this->db->where('message_id', $user_id);
-        $this->db->where('is_read', 0); // Par exemple, pour les messages non lus
-        return $this->db->count_all_results('messages');
-    }
-
-   
-
-   
-}
+/** --------------------------------------------- */

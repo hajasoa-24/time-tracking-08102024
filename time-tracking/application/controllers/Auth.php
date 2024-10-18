@@ -147,7 +147,7 @@ class Auth extends CI_Controller {
 			'usersuppl_issupportadmin' => $datas->usersuppl_issupportadmin,
 			'usersuppl_isRespTransport' => $datas->usersuppl_isRespTransport,
 			'listcampagne' => $datas->list_campagne,
-			'listservice' => $datas->list_service
+			'listservice' => $datas->list_service,
 		];
 
 		$this->session->set_userdata('user', $user);

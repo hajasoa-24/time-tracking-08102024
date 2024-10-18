@@ -2,50 +2,50 @@
     <div id="userInfo" data-username="<?= $top['username'] ?>"></div> 
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-3">
-                <div class="card-header">
-                    <h3 class="card-title"><span class="initial" id="initial"></span><span id="username"></span></h3>
-                </div>  
-                <div class="list-group " style="height: 740px; overflow-y: scroll;">    
-                    <div class="d-flex justify-content-center">
-                        <div class="spinner-border" role="status" id="spinner">
-                            <span class="visually-hidden">Loading...</span>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <!--<span class="initial" id="initial"></span>-->
+                            <span class="card-title text-white" id="username"></span>
+                        </h3>
+                    </div>
+                    <div class="list-group" style="height: 740px; overflow-y: scroll;">
+                        <div id="container" style="height: 300px;" class="messages"></div>
+                        <div class="d-flex justify-content-center">
+                            <div class="spinner-border" role="status" id="spinner">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
                         </div>
                     </div>
-                    <div id="container" style="heigt: 300px" class="messages"></div>
                 </div>
             </div>
 
-            <div class="col-md-9">
-                    <div class="card card-primary card-outline">
-                        <div class="card-header">
-                            <h3 class="card-title">Elément envoyé</h3>
-                        </div>
-                            <div class="card-body p-0"  style="height: 700px; overflow-y: scroll;">
-                            <div id="notification-container"></div>
-                            <div id="success-message" class="alert alert-success" style="display: none;"></div>
-                                <div id="spinnerOne" style="display:none;">
-                                    <button class="btn btn-primary" type="button" disabled>
-                                        <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
-                                        <span role="status">Chargement...</span>
-                                    </button>
-                                </div> 
-
-                                <div class="mailbox-read-message ml-3">
-                                    <div id="messageDisplay">
-                                                            
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-footer">
-                                <div id="bouton_suppression"></div>
-                                <div class="float-end" >
-                                    <div class="inline"  id="user_lus"></div>
-                                    <div class="inline"  id="user_nonlus"></div>
-                                </div>
-                            </div>
+            <div class="col-md-8">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title text-white">Élément envoyé</h3>
                     </div>
+                    <div class="card-body p-0" style="height: 700px; overflow-y: scroll;">
+                        <div id="notification-container"></div>
+                        <div id="success-message" class="alert alert-success" style="display: none;"></div>
+                        <div id="spinnerOne" style="display:none;"  class="position-absolute top-50 start-50 translate-middle">
+                            <button class="btn btn-primary" type="button" disabled>
+                                <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
+                                <span role="status">Chargement...</span>
+                            </button>
+                        </div>
 
+                        <div class="mailbox-read-message ml-3">
+                            <div id="messageDisplay"></div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="float-end">
+                            <div class="inline" id="user_lus"></div>
+                            <div class="inline" id="user_nonlus"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -61,17 +61,17 @@
 $(document).ready(function(){
     $('#spinner').show();
     $.ajax({
-        url: '<?php echo site_url('message/select_message_user'); ?>',
+        url: '<?php echo site_url('message/get_message_send_user'); ?>',
         type: 'POST',
         dataType: 'json',
         data: {
             user_id: user_id, 
         },
         success: function(response) {
-             //console.log(response.data);
+            //console.log(response.data);
             var msg = response.data;
             if (msg.length === 0) {
-                $('#container').append('<div class="alert alert-info">Aucun message personnelle à afficher.</div>');
+                $('#container').append('<div class="alert alert-info">Aucun message envoyé</div>');
             } else {
                     $.each(msg, function(index, info) {
        
@@ -89,6 +89,7 @@ $(document).ready(function(){
                                         <span id="messageButton"></span>
                                         
                                         <span class="fs-5">
+                                            ${info.campagne_libelle != null ? info.campagne_libelle : '' }
                                             ${info.usr_nom != null && info.usr_prenom != null ? info.usr_nom + ' ' + info.usr_prenom : ''}
                                             ${info.message_role_id == 1 ? 'Admin' : 
                                             info.message_role_id == 2 ? 'Agent' : 
@@ -139,7 +140,7 @@ $(document).on('click', '.messagesuser', function() {
     $('#messageDisplay').empty();
     //$('#messageDisplay').text(message); // Afficher le message dans l'élément HTML
     $.ajax({
-        url:'<?php echo site_url('message/select_message_send'); ?>',
+        url:'<?php echo site_url('message/getall_message_send'); ?>',
         type:'POST',
         dataType: 'json',                                    
         data : {
@@ -160,7 +161,12 @@ $(document).on('click', '.messagesuser', function() {
             $('#modal_user_lus').remove(); 
             $('#modal_user_nonlus').remove();
             $.each(message, function(index, msg){
-                var nomDuFichier = msg.message_fichier_path.split('\\').pop().split('/').pop();
+                //var nomDuFichier = msg.message_fichier_path.split('\\').pop().split('/').pop();
+                if (msg.message_fichier_path) {
+                    var nomDuFichier = msg.message_fichier_path.split('\\').pop().split('/').pop();
+                } else {
+                    var nomDuFichier = '';
+                }
                 $('#bouton_suppression').empty();
                 $('#user_lus').empty();
                 $('#user_nonlus').empty();
@@ -170,6 +176,7 @@ $(document).on('click', '.messagesuser', function() {
                             <h5>Objet:${msg.message_objet}</h5>
                             <h6>Destinatair:
                                 <span>
+                                    ${msg.campagne_libelle != null ? msg.campagne_libelle : '' }
                                     ${msg.usr_nom != null && msg.usr_prenom != null ? msg.usr_nom + ' ' + msg.usr_prenom : ''}
                                     ${msg.message_role_id == 1 ? 'Admin' : 
                                     msg.message_role_id == 2 ? 'Agent' : 
@@ -188,7 +195,7 @@ $(document).on('click', '.messagesuser', function() {
                                                 <div class="mailbox-attachment-info">
                             ${nomDuFichier ? `
                                 <a href="${base_url}${nomDuFichier}" class="mailbox-attachment-name" target="_blank">
-                                    <i class="fa fa-paperclip"></i> Ouvrir ${nomDuFichier}
+                                    <i class="fa fa-paperclip"></i> ${nomDuFichier}
                                 </a>
                             ` : `
                                 <div></div>
@@ -199,6 +206,24 @@ $(document).on('click', '.messagesuser', function() {
                 $('#bouton_suppression').append(`
                  <button type="button" class="btn btn-default supprimer_msg" id="${msg.message_id}" data-bs-toggle="modal" data-bs-target="#exampleModal" ><i class="fa fa-trash" aria-hidden="true"></i> Supprimer</button> 
                 `)
+
+                    // Ajouter le contenu au tableau de la modal lors de l'ouverture
+            $('#user_nonlus').empty();
+            $('#user_nonlus').append(`
+            ${msg.campagne_libelle != null || msg.usr_nom != null && msg.usr_prenom != null ?  
+                `
+                    <div></div>
+                `
+                :
+                `
+                    <div>
+                        <i class="fa fa-low-vision" aria-hidden="true"></i> Non lus ${userNonLus.length}
+                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modal_user_nonlus">Voir</button>
+                    </div>
+                ` 
+            }
+  
+            `);
             })
             let modalBodyContent = '';
 
@@ -306,14 +331,7 @@ $(document).on('click', '.messagesuser', function() {
                 `;
             });
 
-            // Ajouter le contenu au tableau de la modal lors de l'ouverture
-            $('#user_nonlus').empty();
-            $('#user_nonlus').append(`
-                <div>
-                    <i class="fa fa-low-vision" aria-hidden="true"></i> Non lus ${userNonLus.length}
-                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modal_user_nonlus">Voir</button>
-                </div>
-            `);
+        
 
                 // Modal HTML
                 const modalHtml3 = `
@@ -475,16 +493,70 @@ $(document).ready(function() {
 <style>
 .initial {
     display: inline-block;
-    width: 30px; /* Ajuste la taille */
-    height: 30px; /* Ajuste la taille */
-    border-radius: 50%; /* Bordure ronde */
+    width: 30px; 
+    height: 30px;
+    border-radius: 50%;
+    background-color: #33A8FF; 
+    color: white; 
+    text-align: center;
+    line-height: 30px; 
+    font-weight: bold; 
+    margin-right: 5px; 
+}
+
+/* En-tête de carte */
+.card-header {
     background-color: #33A8FF; /* Couleur de fond */
     color: white; /* Couleur du texte */
-    text-align: center;
-    line-height: 30px; /* Aligne le texte verticalement */
-    font-weight: bold; /* Met en gras */
-    margin-right: 5px; /* Espacement à droite */
 }
+
+/* Liste de messages */
+.list-group {
+    margin-top:8px;
+    background-color: white; /* Fond blanc pour les messages */
+    border-radius: 8px; /* Coins arrondis */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* Ombre légère */
+}
+
+/* Élément de message */
+.messages {
+    padding: 15px; /* Espacement intérieur */
+}
+
+/* Message au survol */
+.messages .message-item:hover {
+    background-color: #f5f5f5; /* Couleur de fond au survol */
+}
+
+/* Lecture de message */
+.mailbox-read-message {
+    padding: 15px; /* Espacement intérieur */
+    line-height: 1.6; /* Hauteur de ligne pour un meilleur espacement */
+}
+
+/* Spinner */
+.spinner-border {
+    margin: 0 auto; /* Centrer le spinner */
+}
+
+/* Notifications */
+.alert {
+    margin: 10px 0; /* Espacement vertical */
+}
+
+/* Footer de la carte */
+.card-footer {
+    background-color: #f8f9fa; /* Fond gris clair */
+    border-top: 1px solid #e0e0e0; /* Ligne supérieure */
+}
+
+/* Utilisateur lu/non lu */
+.inline {
+    margin-right: 10px; /* Espacement entre les éléments */
+    font-weight: bold; /* Texte en gras */
+    color: #555; /* Couleur du texte */
+}
+
 </style>
 
 
